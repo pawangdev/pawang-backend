@@ -19,6 +19,7 @@ func SetupRouter(e *echo.Echo) {
 	api.POST("/categories/create", controllers.CategoryStore, middleware.IsAuthenticated)
 	api.PUT("/categories/:categoryId/update", controllers.CategoryUpdate, middleware.IsAuthenticated)
 	api.DELETE("/categories/:categoryId/delete", controllers.CategoryDestroy, middleware.IsAuthenticated)
+	api.Static("/categories/", "public/users/")
 
 	api.GET("/wallets", controllers.WalletIndex, middleware.IsAuthenticated)
 	api.GET("/wallets/:walletId", controllers.WalletShow, middleware.IsAuthenticated)
@@ -31,4 +32,5 @@ func SetupRouter(e *echo.Echo) {
 	api.POST("/transactions/create", controllers.TransactionStore, middleware.IsAuthenticated)
 	api.PUT("/transactions/:transactionId/update", controllers.TransactionUpdate, middleware.IsAuthenticated)
 	api.DELETE("/transactions/:transactionId/delete", controllers.TransactionDestroy, middleware.IsAuthenticated)
+	api.Static("/transactions/", "public/users/")
 }
