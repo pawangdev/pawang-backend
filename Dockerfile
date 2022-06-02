@@ -1,9 +1,10 @@
-FROM golang:alpine AS build-image
-RUN apk update && apk add build-base git gcc mercurial
-ADD . /src
-RUN cd /src && go build -o go-pawang
+FROM golang:1.18.3 AS build-image
+WORKDIR /usr/src/app
 
-FROM alpine
-WORKDIR /app
-COPY --from=build-image /src/go-pawang /app/
-ENTRYPOINT [ "./go-pawang" ]
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+COPY . .
+RUN go build -v -o /usr/local/bin/pawang-be
+EXPOSE 1234
+CMD ["pawang-be"]
