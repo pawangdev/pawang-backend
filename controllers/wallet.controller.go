@@ -11,7 +11,7 @@ import (
 
 type inputWallet struct {
 	Name    string `json:"name" form:"name"`
-	Balance uint   `json:"balance" form:"balance"`
+	Balance uint64 `json:"balance" form:"balance"`
 }
 
 func WalletIndex(c echo.Context) error {

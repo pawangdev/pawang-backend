@@ -1,10 +1,12 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Transaction struct {
 	ID          uint      `json:"id" form:"id"`
-	Amount      uint      `json:"amount" form:"amount"`
+	Amount      uint64    `json:"amount" form:"amount"`
 	CategoryID  uint      `json:"category_id" form:"category_id"`
 	WalletID    uint      `json:"wallet_id" form:"wallet_id"`
 	Type        string    `json:"type" form:"type"`
