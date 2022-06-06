@@ -23,7 +23,7 @@ func CategoryIndex(c echo.Context) error {
 	db := config.ConnectDatabase()
 	var categories []models.Category
 
-	if err := db.Find(&categories, "user_id = ?", helpers.GetLoginUserID(c)).Error; err != nil {
+	if err := db.Find(&categories).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
 	}
 
@@ -36,7 +36,7 @@ func CategoryShow(c echo.Context) error {
 
 	id := c.Param("categoryId")
 
-	result := db.Preload("Category").Find(&category, "id = ? AND user_id = ?", id, helpers.GetLoginUserID(c))
+	result := db.Preload("Category").Find(&category, "id = ?", id)
 
 	if result.RowsAffected == 0 {
 		return echo.NewHTTPError(http.StatusNotFound, models.Response{Success: false, Message: "category not found", Data: nil})
