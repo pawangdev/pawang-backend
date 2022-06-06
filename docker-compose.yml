@@ -5,10 +5,10 @@ services:
     image: mysql:5.7
     container_name: pawang-backend-sql
     environment:
-      - 'MYSQL_ROOT_PASSWORD=12345678'
-      - 'MYSQL_DATABASE=db_pawang'
-      - 'MYSQL_USER=pawang'
-      - 'MYSQL_PASSWORD=pawang11223344'
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
       - 3306:3306
@@ -38,19 +38,13 @@ services:
     ports:
       - 1234:1234
     volumes:
-      - .:/app
+      - .:/usr/src/app
     depends_on:
       - database
     container_name: pawang-backend-go
     restart: unless-stopped
     networks:
       - pawang-networks
-    environment:
-      - 'DB_HOST=pawang-backend-sql:3306'
-      - 'DB_DATABASE=db_pawang'
-      - 'DB_USERNAME=pawang'
-      - 'DB_PASSWORD=pawang11223344'
-      - 'JWT_TOKEN_SECRET=e80f0936-de3c-4bdd-8a83-7fbe1468e5d1'
 
 volumes:
   mysql-data:
