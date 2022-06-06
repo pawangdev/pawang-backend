@@ -10,8 +10,8 @@ import (
 )
 
 type inputWallet struct {
-	Name    string `json:"name" form:"name"`
-	Balance uint64 `json:"balance" form:"balance"`
+	Name    string `json:"name" form:"name" validate:"required"`
+	Balance uint64 `json:"balance" form:"balance" validate:"required,gte=0"`
 }
 
 func WalletIndex(c echo.Context) error {

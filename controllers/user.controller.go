@@ -11,16 +11,16 @@ import (
 )
 
 type inputRegister struct {
-	Name     string `json:"name" form:"name"`
-	Email    string `json:"email" form:"email"`
-	Password string `json:"password" form:"password"`
-	Phone    string `json:"phone" form:"phone"`
-	Gender   string `json:"gender" form:"gender"`
+	Name     string `json:"name" form:"name" validate:"required"`
+	Email    string `json:"email" form:"email" validate:"required,email"`
+	Password string `json:"password" form:"password" validate:"required,min=8"`
+	Phone    string `json:"phone" form:"phone" validate:"required"`
+	Gender   string `json:"gender" form:"gender" validate:"required"`
 }
 
 type inputLogin struct {
-	Email    string `json:"email" form:"email"`
-	Password string `json:"password" form:"password"`
+	Email    string `json:"email" form:"email" validate:"required"`
+	Password string `json:"password" form:"password" validate:"required"`
 }
 
 func Register(c echo.Context) error {

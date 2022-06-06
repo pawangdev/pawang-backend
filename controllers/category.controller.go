@@ -15,8 +15,8 @@ import (
 )
 
 type inputCategory struct {
-	Name              string `json:"name" form:"name"`
-	TransactionTypeID uint   `json:"transaction_type_id" form:"transaction_type_id" gorm:"not null"`
+	Name string `json:"name" form:"name" validate:"required"`
+	Type string `json:"type" form:"type" validate:"required"`
 }
 
 func CategoryIndex(c echo.Context) error {
@@ -72,7 +72,7 @@ func CategoryStore(c echo.Context) error {
 
 	category := new(models.Category)
 	category.Name = input.Name
-	category.TransactionTypeID = input.TransactionTypeID
+	category.Type = input.Type
 	category.IconUrl = fileSrc
 	category.UserID = helpers.GetLoginUserID(c)
 
@@ -129,7 +129,7 @@ func CategoryUpdate(c echo.Context) error {
 	}
 
 	category.Name = input.Name
-	category.TransactionTypeID = input.TransactionTypeID
+	category.Type = input.Type
 	category.UserID = helpers.GetLoginUserID(c)
 
 	if err := db.Preload("TransactionType").Session(&gorm.Session{FullSaveAssociations: true}).Save(&category).Error; err != nil {

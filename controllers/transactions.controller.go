@@ -14,13 +14,13 @@ import (
 )
 
 type inputTransaction struct {
-	Amount            uint64    `json:"amount" form:"amount"`
-	CategoryID        uint      `json:"category_id" form:"category_id"`
-	WalletID          uint      `json:"wallet_id" form:"wallet_id"`
-	TransactionTypeID uint      `json:"transaction_type_id" form:"transaction_type_id"`
-	Description       string    `json:"description" form:"description"`
-	ImageUrl          string    `json:"image_url" form:"image_url"`
-	Date              time.Time `json:"date" form:"date"`
+	Amount      uint64    `json:"amount" form:"amount" validate:"required,gte=0"`
+	CategoryID  uint      `json:"category_id" form:"category_id" validate:"required"`
+	WalletID    uint      `json:"wallet_id" form:"wallet_id" validate:"required"`
+	Type        string    `json:"type" form:"type" validate:"required"`
+	Description string    `json:"description" form:"description"`
+	ImageUrl    string    `json:"image_url" form:"image_url"`
+	Date        time.Time `json:"date" form:"date" validate:"required"`
 }
 
 func TransactionIndex(c echo.Context) error {
@@ -65,14 +65,16 @@ func TransactionStore(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, models.Response{Success: false, Data: nil, Message: "wallet not found"})
 	}
 
-	if input.TransactionTypeID == 2 {
+	if input.Type == "outcome" {
 		if wallet.Balance < input.Amount {
 			return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "the balance is not sufficient"})
 		}
 
 		wallet.Balance = wallet.Balance - input.Amount
-	} else if input.TransactionTypeID == 1 {
+	} else if input.Type == "income" {
 		wallet.Balance = wallet.Balance + input.Amount
+	} else {
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "type not found"})
 	}
 
 	if len(c.Request().MultipartForm.File) != 0 {
@@ -99,7 +101,7 @@ func TransactionStore(c echo.Context) error {
 	transaction.Amount = input.Amount
 	transaction.CategoryID = input.CategoryID
 	transaction.WalletID = input.WalletID
-	transaction.TransactionTypeID = input.TransactionTypeID
+	transaction.Type = input.Type
 	transaction.Description = input.Description
 	transaction.Date = input.Date
 	transaction.UserID = helpers.GetLoginUserID(c)
@@ -139,14 +141,16 @@ func TransactionUpdate(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, models.Response{Success: false, Data: nil, Message: "wallet not found"})
 	}
 
-	if input.TransactionTypeID == 2 {
+	if input.Type == "outcome" {
 		if wallet.Balance < input.Amount {
 			return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "the balance is not sufficient"})
 		}
 
 		wallet.Balance = (wallet.Balance - transaction.Amount) - input.Amount
-	} else if input.TransactionTypeID == 1 {
+	} else if input.Type == "income" {
 		wallet.Balance = (wallet.Balance - transaction.Amount) + input.Amount
+	} else {
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "type not found"})
 	}
 
 	if len(c.Request().MultipartForm.File) != 0 {
@@ -180,7 +184,7 @@ func TransactionUpdate(c echo.Context) error {
 	transaction.Amount = input.Amount
 	transaction.CategoryID = input.CategoryID
 	transaction.WalletID = input.WalletID
-	transaction.TransactionTypeID = input.TransactionTypeID
+	transaction.Type = input.Type
 	transaction.Description = input.Description
 	transaction.Date = input.Date
 	transaction.UserID = helpers.GetLoginUserID(c)
