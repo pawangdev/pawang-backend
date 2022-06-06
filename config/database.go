@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"pawang-backend/models"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -21,6 +22,9 @@ func ConnectDatabase() *gorm.DB {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
+	db.AutoMigrate(models.Transaction{}, models.User{}, models.Category{}, models.TransactionType{}, models.Wallet{})
+	Load(db)
 
 	return db
 }

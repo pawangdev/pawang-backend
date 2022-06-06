@@ -82,7 +82,7 @@ func Login(c echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	return c.JSON(http.StatusAccepted, models.Response{Success: true, Data: token, Message: "login success"})
+	return c.JSON(http.StatusAccepted, models.Response{Success: true, Data: map[string]string{"token": token}, Message: "login success"})
 }
 
 func Profile(c echo.Context) error {
