@@ -23,7 +23,7 @@ func CategoryIndex(c echo.Context) error {
 	db := config.ConnectDatabase()
 	var categories []models.Category
 
-	if err := db.Preload("TransactionType").Find(&categories, "user_id = ?", helpers.GetLoginUserID(c)).Error; err != nil {
+	if err := db.Find(&categories, "user_id = ?", helpers.GetLoginUserID(c)).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
 	}
 
@@ -36,7 +36,7 @@ func CategoryShow(c echo.Context) error {
 
 	id := c.Param("categoryId")
 
-	result := db.Preload("TransactionType").Preload("Category").Find(&category, "id = ? AND user_id = ?", id, helpers.GetLoginUserID(c))
+	result := db.Preload("Category").Find(&category, "id = ? AND user_id = ?", id, helpers.GetLoginUserID(c))
 
 	if result.RowsAffected == 0 {
 		return echo.NewHTTPError(http.StatusNotFound, models.Response{Success: false, Message: "category not found", Data: nil})
@@ -76,7 +76,7 @@ func CategoryStore(c echo.Context) error {
 	category.IconUrl = fileSrc
 	category.UserID = helpers.GetLoginUserID(c)
 
-	if err := db.Preload("TransactionType").Session(&gorm.Session{FullSaveAssociations: true}).Create(&category).Error; err != nil {
+	if err := db.Session(&gorm.Session{FullSaveAssociations: true}).Create(&category).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
 	}
 
@@ -132,7 +132,7 @@ func CategoryUpdate(c echo.Context) error {
 	category.Type = input.Type
 	category.UserID = helpers.GetLoginUserID(c)
 
-	if err := db.Preload("TransactionType").Session(&gorm.Session{FullSaveAssociations: true}).Save(&category).Error; err != nil {
+	if err := db.Session(&gorm.Session{FullSaveAssociations: true}).Save(&category).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
 	}
 
