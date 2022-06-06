@@ -24,7 +24,6 @@ func ConnectDatabase() *gorm.DB {
 	}
 
 	db.AutoMigrate(models.Transaction{}, models.User{}, models.Category{}, models.TransactionType{}, models.Wallet{})
-	Load(db)
 
 	return db
 }
