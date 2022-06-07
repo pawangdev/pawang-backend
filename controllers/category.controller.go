@@ -21,10 +21,18 @@ type inputCategory struct {
 
 func CategoryIndex(c echo.Context) error {
 	db := config.ConnectDatabase()
+
+	types := c.QueryParam("type")
 	var categories []models.Category
 
-	if err := db.Find(&categories).Error; err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
+	if len(types) != 0 {
+		if err := db.Find(&categories, "type = ?", types).Error; err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
+		}
+	} else {
+		if err := db.Find(&categories).Error; err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
+		}
 	}
 
 	return c.JSON(http.StatusOK, models.Response{Success: true, Data: categories})
