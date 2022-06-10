@@ -231,10 +231,12 @@ func TransactionDestroy(c echo.Context) error {
 	}
 
 	// Delete Old File
-	getNameOldFile := strings.Split(transaction.ImageUrl, "/")
-	errDelete := os.RemoveAll(fmt.Sprintf("public/users/%v/transactions/%v", helpers.GetLoginUserID(c), getNameOldFile[3]))
-	if errDelete != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: errDelete.Error(), Data: nil})
+	if transaction.ImageUrl != "" {
+		getNameOldFile := strings.Split(transaction.ImageUrl, "/")
+		errDelete := os.RemoveAll(fmt.Sprintf("public/users/%v/transactions/%v", helpers.GetLoginUserID(c), getNameOldFile[3]))
+		if errDelete != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: errDelete.Error(), Data: nil})
+		}
 	}
 
 	if err := db.Delete(&transaction).Error; err != nil {
