@@ -9,9 +9,10 @@ type User struct {
 	Password     string        `json:"-" form:"password" gorm:"type:varchar(255);not null"`
 	Phone        string        `json:"phone" form:"phone" gorm:"type:varchar(15);not null"`
 	Gender       string        `json:"gender" form:"gender" gorm:"type:varchar(10);not null"`
+	ImageProfile string        `json:"image_profile" form:"image_profile" gorm:"type:varchar(255)"`
 	CreatedAt    time.Time     `json:"created_at" form:"created_at"`
 	UpdatedAt    time.Time     `json:"updated_at" form:"updated_at"`
-	Categories   []Category    `json:"-"`
-	Transactions []Transaction `json:"-"`
-	Wallets      []Wallet      `json:"-"`
+	Categories   []Category    `json:"-" gorm:"constraint:OnDelete:CASCADE;"`
+	Transactions []Transaction `json:"-" gorm:"constraint:OnDelete:CASCADE;"`
+	Wallets      []Wallet      `json:"-" gorm:"constraint:OnDelete:CASCADE;"`
 }

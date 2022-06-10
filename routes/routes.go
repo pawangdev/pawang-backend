@@ -13,6 +13,9 @@ func SetupRouter(e *echo.Echo) {
 	api.POST("/register", controllers.Register)
 	api.POST("/login", controllers.Login)
 	api.GET("/profile", controllers.Profile, middleware.IsAuthenticated)
+	api.POST("/profile/change-password", controllers.ChangePassword, middleware.IsAuthenticated)
+	api.POST("/profile/change-profile", controllers.UpdateProfile, middleware.IsAuthenticated)
+	api.Static("/profile_image/", "public/users/")
 
 	api.GET("/categories", controllers.CategoryIndex, middleware.IsAuthenticated)
 	api.GET("/categories/:categoryId", controllers.CategoryShow, middleware.IsAuthenticated)

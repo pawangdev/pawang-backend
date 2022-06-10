@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"pawang-backend/config"
 	"pawang-backend/helpers"
 	"pawang-backend/models"
+	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
@@ -21,6 +25,16 @@ type inputRegister struct {
 type inputLogin struct {
 	Email    string `json:"email" form:"email" validate:"required"`
 	Password string `json:"password" form:"password" validate:"required"`
+}
+
+type inputChangePassword struct {
+	PasswordNow             string `json:"password_now" form:"password_now" validate:"required"`
+	PasswordNew             string `json:"password_new" form:"password_new" validate:"required"`
+	PasswordNewConfirmation string `json:"password_new_confirmation" form:"password_new_confirmation" validate:"required"`
+}
+
+type inputChangeProfile struct {
+	Name string `json:"name" form:"name" validate:"required"`
 }
 
 func Register(c echo.Context) error {
@@ -98,4 +112,97 @@ func Profile(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, models.Response{Success: true, Data: user})
+}
+
+func ChangePassword(c echo.Context) error {
+	db := config.ConnectDatabase()
+	user := new(models.User)
+	var input inputChangePassword
+
+	results := db.Find(&user, "id = ?", helpers.GetLoginUserID(c))
+
+	if results.RowsAffected == 0 {
+		return c.JSON(http.StatusNotFound, models.Response{Success: false, Data: nil, Message: "Data Tidak Ditemukan"})
+	}
+
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "Input Tidak Sesuai"})
+	}
+
+	checkOldPassword, _ := helpers.CompareHashPassword(input.PasswordNow, user.Password)
+
+	if !checkOldPassword {
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "Password Lama Salah"})
+	}
+
+	if input.PasswordNew != input.PasswordNewConfirmation {
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "Password Baru Tidak Sesuai Dengan Password Konfirmasi"})
+	}
+
+	hashNewPassword, err := helpers.HashPassword(input.PasswordNew)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
+	}
+
+	user.Password = hashNewPassword
+
+	if err := db.Save(&user).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, models.Response{Success: true, Data: nil, Message: "Success Update Password"})
+}
+
+func UpdateProfile(c echo.Context) error {
+	db := config.ConnectDatabase()
+	user := new(models.User)
+	var input inputChangeProfile
+	results := db.Find(&user, "id = ?", helpers.GetLoginUserID(c))
+
+	if results.RowsAffected == 0 {
+		return c.JSON(http.StatusNotFound, models.Response{Success: false, Data: nil, Message: "Data Tidak Ditemukan"})
+	}
+
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "Input Tidak Sesuai"})
+	}
+
+	if len(c.Request().MultipartForm.File) != 0 {
+		// Get Form Image
+		file, err := c.FormFile("image")
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
+		}
+
+		// Setting Directory
+		filePath := fmt.Sprintf("public/users/%v/profile_image/%v-%v", helpers.GetLoginUserID(c), time.Now().Unix(), file.Filename)
+		fileSrc := fmt.Sprintf("profile_image/%v/profile_image/%v-%v", helpers.GetLoginUserID(c), time.Now().Unix(), file.Filename)
+		dirPath := fmt.Sprintf("public/users/%v/profile_image/", helpers.GetLoginUserID(c))
+
+		// Delete Old File
+		if user.ImageProfile != "" {
+			getNameOldFile := strings.Split(user.ImageProfile, "/")
+			errDelete := os.RemoveAll(fmt.Sprintf("public/users/%v/profile_image/%v", helpers.GetLoginUserID(c), getNameOldFile[3]))
+			if errDelete != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
+			}
+		}
+
+		// Func Upload Image
+		err = helpers.UploadImage(filePath, dirPath, *file)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
+		}
+
+		user.ImageProfile = fileSrc
+	}
+
+	user.Name = input.Name
+
+	if err := db.Save(&user).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, models.Response{Success: true, Data: nil, Message: "Berhasil Update Profile User"})
 }

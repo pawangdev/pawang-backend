@@ -27,7 +27,7 @@ func TransactionIndex(c echo.Context) error {
 	db := config.ConnectDatabase()
 	var transactions []models.Transaction
 
-	if err := db.Preload("Category").Find(&transactions, "user_id = ?", helpers.GetLoginUserID(c)).Error; err != nil {
+	if err := db.Preload("Wallet").Preload("Category").Find(&transactions, "user_id = ?", helpers.GetLoginUserID(c)).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
 	}
 
@@ -40,7 +40,7 @@ func TransactionShow(c echo.Context) error {
 
 	id := c.Param("transactionId")
 
-	result := db.Preload("Category").Where("id = ? AND user_id = ?", id, helpers.GetLoginUserID(c)).First(&transaction)
+	result := db.Preload("Wallet").Preload("Category").Where("id = ? AND user_id = ?", id, helpers.GetLoginUserID(c)).First(&transaction)
 
 	if result.RowsAffected == 0 {
 		return c.JSON(http.StatusNotFound, models.Response{Success: false, Data: nil, Message: "transaction not found"})
@@ -167,7 +167,7 @@ func TransactionUpdate(c echo.Context) error {
 
 		// Delete Old File
 		getNameOldFile := strings.Split(transaction.ImageUrl, "/")
-		errDelete := os.RemoveAll(fmt.Sprintf("public/users/%v/categories/%v", helpers.GetLoginUserID(c), getNameOldFile[3]))
+		errDelete := os.RemoveAll(fmt.Sprintf("public/users/%v/transactions/%v", helpers.GetLoginUserID(c), getNameOldFile[3]))
 		if errDelete != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, models.Response{Success: false, Message: err.Error(), Data: nil})
 		}
@@ -203,6 +203,7 @@ func TransactionUpdate(c echo.Context) error {
 func TransactionDestroy(c echo.Context) error {
 	db := config.ConnectDatabase()
 	transaction := new(models.Transaction)
+	wallet := new(models.Wallet)
 
 	id := c.Param("transactionId")
 
@@ -210,6 +211,23 @@ func TransactionDestroy(c echo.Context) error {
 
 	if result.RowsAffected == 0 {
 		return c.JSON(http.StatusNotFound, models.Response{Success: false, Data: nil, Message: "transaction not found"})
+	}
+
+	// Restore Balance on Wallets
+	getWallet := db.Where("id = ?", transaction.WalletID).First(&wallet)
+
+	if getWallet.RowsAffected == 0 {
+		return c.JSON(http.StatusNotFound, models.Response{Success: false, Data: nil, Message: "wallet not found"})
+	}
+
+	wallet.Balance = wallet.Balance + transaction.Amount
+
+	if err := db.Save(&transaction).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
+	}
+
+	if err := db.Save(&wallet).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
 	}
 
 	// Delete Old File

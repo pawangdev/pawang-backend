@@ -9,5 +9,5 @@ type Wallet struct {
 	Balance   uint64    `json:"balance" form:"balance" gorm:"type:bigint;not null"`
 	CreatedAt time.Time `json:"created_at" form:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" form:"updated_at"`
-	User      User      `json:"-"`
+	User      User      `json:"-" gorm:"constraint:OnDelete:CASCADE;"`
 }
