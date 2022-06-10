@@ -16,7 +16,7 @@ type Transaction struct {
 	UserID      uint      `json:"user_id" form:"user_id" gorm:"not null"`
 	CreatedAt   time.Time `json:"created_at" form:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at" form:"updated_at"`
-	Category    Category  `json:"category"`
-	Wallet      Wallet    `json:"wallet"`
-	User        User      `json:"-"`
+	Category    Category  `json:"category" gorm:"constraint:OnDelete:CASCADE;"`
+	Wallet      Wallet    `json:"wallet" gorm:"constraint:OnDelete:CASCADE;"`
+	User        User      `json:"-" gorm:"constraint:OnDelete:CASCADE;"`
 }

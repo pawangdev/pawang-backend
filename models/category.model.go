@@ -12,6 +12,6 @@ type Category struct {
 	Type         string        `json:"type" form:"type" gorm:"type:enum('income','outcome')"`
 	CreatedAt    time.Time     `json:"created_at" form:"created_at"`
 	UpdatedAt    time.Time     `json:"updated_at" form:"updated_at"`
-	User         User          `json:"-" gorm:"constraint:OnDelete:SET NULL;"`
-	Transactions []Transaction `json:"-" gorm:"constraint:OnDelete:SET NULL;"`
+	User         User          `json:"-" gorm:"constraint:OnDelete:CASCADE;"`
+	Transactions []Transaction `json:"-" gorm:"constraint:OnDelete:CASCADE;"`
 }
