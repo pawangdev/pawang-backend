@@ -143,12 +143,12 @@ func TransactionUpdate(c echo.Context) error {
 
 	if input.Type == "outcome" {
 		if wallet.Balance < input.Amount {
-			return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "the balance is not sufficient"})
+			return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "Saldo Pada Wallet Tidak Cukup"})
 		}
 
-		wallet.Balance = (wallet.Balance - transaction.Amount) - input.Amount
+		wallet.Balance = (wallet.Balance + transaction.Amount) - input.Amount
 	} else if input.Type == "income" {
-		wallet.Balance = (wallet.Balance - transaction.Amount) + input.Amount
+		wallet.Balance = (wallet.Balance + transaction.Amount) + input.Amount
 	} else {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: "type not found"})
 	}
@@ -197,7 +197,7 @@ func TransactionUpdate(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, models.Response{Success: true, Data: transaction, Message: "success update transaction"})
+	return c.JSON(http.StatusOK, models.Response{Success: true, Data: transaction, Message: "Berhasil Mengubah Transaksi"})
 }
 
 func TransactionDestroy(c echo.Context) error {
@@ -243,5 +243,5 @@ func TransactionDestroy(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, models.Response{Success: true, Data: nil, Message: "success delete transaction"})
+	return c.JSON(http.StatusOK, models.Response{Success: true, Data: nil, Message: "Berhasil Menghapus Transaksi"})
 }
