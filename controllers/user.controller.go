@@ -106,24 +106,24 @@ func LoginWithGoogle(c echo.Context) error {
 
 func LoginWithGoogleCallback(c echo.Context) error {
 	db := config.ConnectDatabase()
-	userLogin := new(models.User)
+	userLogin := models.User{}
 
 	user, err := echogothic.CompleteUserAuth(c)
 
 	if err != nil {
-		echo.NewHTTPError(http.StatusUnauthorized, models.Response{Success: false, Message: err.Error()})
+		return c.JSON(http.StatusUnauthorized, models.Response{Success: false, Message: err.Error()})
 	}
 
 	result := db.Find(&userLogin, "email = ?", user.Email)
 
 	if result.RowsAffected == 0 {
 		hashed, _ := helpers.HashPassword(time.Now().String())
-		userLogin.Name = user.Name
+		userLogin.Name = user.Email
 		userLogin.Email = user.Email
 		userLogin.ImageProfile = user.AvatarURL
 		userLogin.Password = hashed
 
-		if err := db.Create(&userLogin).Error; err != nil {
+		if err := db.Save(&userLogin).Error; err != nil {
 			return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
 		}
 	}
