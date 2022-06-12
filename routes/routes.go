@@ -10,6 +10,9 @@ import (
 func SetupRouter(e *echo.Echo) {
 	api := e.Group("/api")
 
+	e.GET("/auth/:provider/authorize", controllers.LoginWithGoogle)
+	e.GET("/auth/:provider/callback", controllers.LoginWithGoogleCallback)
+
 	api.POST("/register", controllers.Register)
 	api.POST("/login", controllers.Login)
 	api.GET("/profile", controllers.Profile, middleware.IsAuthenticated)

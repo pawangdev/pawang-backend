@@ -6,9 +6,17 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/providers/google"
 )
 
 func main() {
+	goth.UseProviders(google.New(
+		config.GetEnv("GOOGLE_CLIENT_ID"),
+		config.GetEnv("GOOGLE_CLIENT_SECRET"),
+		config.GetEnv("GOOGLE_CALLBACK_REDIRECT"),
+	))
+
 	e := echo.New()
 
 	e.Use(middleware.Logger())

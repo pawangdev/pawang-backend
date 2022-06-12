@@ -12,6 +12,7 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+	echogothic "github.com/nabowler/echo-gothic"
 )
 
 type inputRegister struct {
@@ -90,6 +91,47 @@ func Login(c echo.Context) error {
 	claims["user_id"] = user.ID
 	claims["name"] = user.Name
 	claims["email"] = user.Email
+
+	token, err := helpers.GenerateToken(claims)
+	if err != nil {
+		return echo.ErrUnauthorized
+	}
+
+	return c.JSON(http.StatusAccepted, models.Response{Success: true, Data: map[string]string{"token": token}, Message: "login success"})
+}
+
+func LoginWithGoogle(c echo.Context) error {
+	return echogothic.BeginAuthHandler(c)
+}
+
+func LoginWithGoogleCallback(c echo.Context) error {
+	db := config.ConnectDatabase()
+	userLogin := new(models.User)
+
+	user, err := echogothic.CompleteUserAuth(c)
+
+	if err != nil {
+		echo.NewHTTPError(http.StatusUnauthorized, models.Response{Success: false, Message: err.Error()})
+	}
+
+	result := db.Find(&userLogin, "email = ?", user.Email)
+
+	if result.RowsAffected == 0 {
+		hashed, _ := helpers.HashPassword(time.Now().String())
+		userLogin.Name = user.Name
+		userLogin.Email = user.Email
+		userLogin.ImageProfile = user.AvatarURL
+		userLogin.Password = hashed
+
+		if err := db.Create(&userLogin).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
+		}
+	}
+
+	claims := jwt.MapClaims{}
+	claims["user_id"] = userLogin.ID
+	claims["name"] = userLogin.Name
+	claims["email"] = userLogin.Email
 
 	token, err := helpers.GenerateToken(claims)
 	if err != nil {
