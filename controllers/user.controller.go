@@ -42,6 +42,7 @@ func Register(c echo.Context) error {
 	db := config.ConnectDatabase()
 	var input inputRegister
 	user := new(models.User)
+	wallet := new(models.Wallet)
 
 	if err := c.Bind(&input); err != nil {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Data: nil, Message: err.Error()})
@@ -60,6 +61,14 @@ func Register(c echo.Context) error {
 	user.Gender = input.Gender
 
 	if err := db.Create(&user).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
+	}
+
+	wallet.Name = "Dompet"
+	wallet.Balance = 0
+	wallet.UserID = user.ID
+
+	if err := db.Create(&wallet).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
 	}
 

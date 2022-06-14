@@ -220,7 +220,11 @@ func TransactionDestroy(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, models.Response{Success: false, Data: nil, Message: "wallet not found"})
 	}
 
-	wallet.Balance = wallet.Balance + transaction.Amount
+	if transaction.Type == "income" {
+		wallet.Balance = wallet.Balance - transaction.Amount
+	} else if transaction.Type == "outcome" {
+		wallet.Balance = wallet.Balance + transaction.Amount
+	}
 
 	if err := db.Save(&transaction).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response{Success: false, Data: nil, Message: err.Error()})
