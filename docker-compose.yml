@@ -2,21 +2,21 @@ version: '3.8'
 
 services:
   database:
-    image: mysql:5.7
+    image: mariadb
     container_name: pawang-backend-sql
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
-      - 3306:3306
+      - "3306"
     networks:
-      - pawang-networks
+      - pawang-network
     volumes:
       - "mysql-data:/var/lib/mysql"
-      - "./db_pawang.sql:/docker-entrypoint-initdb.d/db_pawang.sql"
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -24,31 +24,35 @@ services:
     depends_on:
       - database
     networks:
-      - pawang-networks
+      - pawang-network
     environment:
       - 'PMA_HOST=pawang-backend-sql'
       - 'PMA_PORT=3306'
+    links:
+      - database
     ports:
-      - 8080:80
+      - 8888:80
 
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - 1234:1234
-    volumes:
-      - .:/usr/src/app
+    build: .
+    container_name: pawang-backend-api
+    restart: always
     depends_on:
       - database
-    container_name: pawang-backend-go
-    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "1234:1234"
+    volumes:
+      - .:/app/pawang-be
+    links:
+      - database
     networks:
-      - pawang-networks
+      - pawang-network
 
 volumes:
   mysql-data:
 
 
 networks:
-  pawang-networks:
+  pawang-network:

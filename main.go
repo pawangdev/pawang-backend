@@ -1,31 +1,28 @@
 package main
 
 import (
+	"log"
 	"pawang-backend/config"
-	"pawang-backend/routes"
+	"pawang-backend/router"
+	"pawang-backend/seeder"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/markbates/goth"
-	"github.com/markbates/goth/providers/google"
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
-	goth.UseProviders(google.New(
-		config.GetEnv("GOOGLE_CLIENT_ID"),
-		config.GetEnv("GOOGLE_CLIENT_SECRET"),
-		config.GetEnv("GOOGLE_CALLBACK_REDIRECT"),
-	))
+	app := fiber.New()
 
-	e := echo.New()
+	// Database
+	db, err := config.Database()
+	seeder.SeederCategory(db)
 
-	e.Use(middleware.Logger())
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
-	// Connect Database
-	config.ConnectDatabase()
+	// API VERSIONING
+	v1 := app.Group("/api/v1")
+	router.NewRouter(v1)
 
-	// Setup Router
-	routes.SetupRouter(e)
-
-	e.Logger.Fatal(e.Start(":1234"))
+	app.Listen(":1234")
 }

@@ -2,28 +2,33 @@ package config
 
 import (
 	"fmt"
-	"log"
-	"pawang-backend/models"
+	"pawang-backend/entity"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-func ConnectDatabase() *gorm.DB {
-	username := GetEnv("DB_USERNAME")
-	password := GetEnv("DB_PASSWORD")
-	host := GetEnv("DB_HOST")
-	database := GetEnv("DB_DATABASE")
+func Database() (*gorm.DB, error) {
+	DB_HOST := GetEnv("DB_HOST")
+	DB_PORT := GetEnv("DB_PORT")
+	DB_DATABASE := GetEnv("DB_DATABASE")
+	DB_USERNAME := GetEnv("DB_USERNAME")
+	DB_PASSWORD := GetEnv("DB_PASSWORD")
 
-	dsn := fmt.Sprintf("%v:%v@tcp(%v)/%v?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, database)
+	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local",
+		DB_USERNAME,
+		DB_PASSWORD,
+		DB_HOST,
+		DB_PORT,
+		DB_DATABASE,
+	)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-
 	if err != nil {
-		log.Fatal(err.Error())
+		return db, err
 	}
 
-	db.AutoMigrate(models.Transaction{}, models.User{}, models.Category{}, models.Wallet{})
+	db.AutoMigrate(entity.User{}, entity.Wallet{}, entity.Category{}, entity.Transaction{}, entity.SubCategory{}, entity.UserResetPassword{})
 
-	return db
+	return db, nil
 }
