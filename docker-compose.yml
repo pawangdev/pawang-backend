@@ -33,18 +33,18 @@ services:
     ports:
       - 1233:80
 
-  api:
-    build: .
+  api-with-air:
+    image: cosmtrek/air
     container_name: pawang-backend-api
     restart: always
+    working_dir: /pawang-api
     depends_on:
       - database
-    env_file:
-      - .env
+    env_file: .env
     ports:
       - "1234:1234"
     volumes:
-      - .:/app/pawang-be
+      - ./:/pawang-api
     links:
       - database
     networks:
