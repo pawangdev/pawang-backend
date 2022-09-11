@@ -52,7 +52,7 @@ func (handler *transactionHandler) CreateTransaction(c *fiber.Ctx) error {
 
 		dirPath := fmt.Sprintf("./public/uploads/transactions/%v", userID)
 		fileName := fmt.Sprintf("./public/uploads/transactions/%v/%d-%s", userID, time.Now().Unix(), file.Filename)
-		imageUrl := fmt.Sprintf("/api/v1/storage/uploads/transactions/%v/%d-%s", userID, time.Now().Unix(), file.Filename)
+		imageUrl := fmt.Sprintf("/api/storage/uploads/transactions/%v/%d-%s", userID, time.Now().Unix(), file.Filename)
 
 		err = helper.CreateFolder(dirPath)
 		if err != nil {
@@ -133,7 +133,7 @@ func (handler *transactionHandler) UpdateTransaction(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).JSON(response)
 		}
 		fileName := fmt.Sprintf("./public/uploads/transactions/%v/%d-%s", userID, time.Now().Unix(), file.Filename)
-		imageUrl := fmt.Sprintf("/api/v1/storage/uploads/transactions/%v/%d-%s", userID, time.Now().Unix(), file.Filename)
+		imageUrl := fmt.Sprintf("/api/storage/uploads/transactions/%v/%d-%s", userID, time.Now().Unix(), file.Filename)
 
 		err = c.SaveFile(file, fileName)
 		if err != nil {
@@ -141,13 +141,15 @@ func (handler *transactionHandler) UpdateTransaction(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).JSON(response)
 		}
 
-		// Delete Old File
-		getNameOldFile := strings.Split(transaction.ImageUrl, "/")[7]
-		fileOldPath := fmt.Sprintf("./public/uploads/transactions/%v/%v", userID, getNameOldFile)
-		err = helper.DeleteFile(fileOldPath)
-		if err != nil {
-			response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
-			return c.Status(fiber.StatusBadRequest).JSON(response)
+		if transaction.ImageUrl != "" {
+			// Delete Old File
+			getNameOldFile := strings.Split(transaction.ImageUrl, "/")[7]
+			fileOldPath := fmt.Sprintf("./public/uploads/transactions/%v/%v", userID, getNameOldFile)
+			err = helper.DeleteFile(fileOldPath)
+			if err != nil {
+				response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+				return c.Status(fiber.StatusBadRequest).JSON(response)
+			}
 		}
 
 		input.ImageUrl = imageUrl
@@ -182,12 +184,14 @@ func (handler *transactionHandler) DeleteTransaction(c *fiber.Ctx) error {
 	}
 
 	// Delete Old File
-	getNameOldFile := strings.Split(transaction.ImageUrl, "/")[7]
-	fileOldPath := fmt.Sprintf("./public/uploads/transactions/%v/%v", userID, getNameOldFile)
-	err = helper.DeleteFile(fileOldPath)
-	if err != nil {
-		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
-		return c.Status(fiber.StatusBadRequest).JSON(response)
+	if transaction.ImageUrl != "" {
+		getNameOldFile := strings.Split(transaction.ImageUrl, "/")[7]
+		fileOldPath := fmt.Sprintf("./public/uploads/transactions/%v/%v", userID, getNameOldFile)
+		err = helper.DeleteFile(fileOldPath)
+		if err != nil {
+			response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(response)
+		}
 	}
 
 	err = handler.transactionService.DeleteTransaction(transactionID, userID)

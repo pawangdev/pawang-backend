@@ -26,15 +26,16 @@ func newUserRouter(router fiber.Router, db *gorm.DB) {
 	walletRepository := repository.NewWalletRepository(db)
 	userService := service.NewUserService(userRepository, walletRepository)
 	authService := service.NewAuthService()
-	userHandler := handler.NewUserHandler(userService, authService)
+	emailService := service.NewEmailService()
+	userHandler := handler.NewUserHandler(userService, authService, emailService)
 
 	router.Post("/users/register", userHandler.RegisterUser)
 	router.Post("/users/login", userHandler.LoginUser)
 	router.Put("/users/change-password", middleware.Authenticated(), userHandler.ChangePassword)
 	router.Put("/users/change-profile", middleware.Authenticated(), userHandler.ChangeProfile)
 	router.Get("/users/profile", middleware.Authenticated(), userHandler.UserProfile)
-	router.Post("/users/reset-password", userHandler.ResetPasswordByEmail)
-	router.Post("/users/reset-password/token", userHandler.ResetPasswordWithToken)
+	router.Post("/users/reset-password", userHandler.RequestResetPasswordToken)
+	router.Post("/users/reset-password/token", userHandler.VerifyResetPasswordToken)
 }
 
 func newWalletRouter(router fiber.Router, db *gorm.DB) {

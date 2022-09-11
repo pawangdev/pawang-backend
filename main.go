@@ -21,8 +21,8 @@ func main() {
 	}
 
 	// API VERSIONING
-	v1 := app.Group("/api/v1")
-	router.NewRouter(v1)
+	api := app.Group("/api")
+	router.NewRouter(api)
 
 	app.Listen(":1234")
 }

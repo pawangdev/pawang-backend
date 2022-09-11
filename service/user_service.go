@@ -15,8 +15,8 @@ type UserService interface {
 	ChangePassword(userID int, input request.UserChangePasswordRequest) (entity.User, error)
 	ChangeProfile(userID int, input request.UserChangeProfileRequest) (entity.User, error)
 	Profile(userID int) (entity.User, error)
-	ResetPasswordByEmail(input request.UserResetPasswordRequest) (entity.UserResetPassword, error)
-	ResetPasswordToken(input request.UserResetPasswordTokenRequest) (entity.User, error)
+	RequestResetPasswordToken(input request.UserResetPasswordRequest) (entity.UserResetPassword, error)
+	VerifyResetPasswordToken(input request.UserResetPasswordTokenRequest) (entity.User, error)
 }
 
 type userService struct {
@@ -140,7 +140,7 @@ func (service *userService) Profile(userID int) (entity.User, error) {
 	return user, nil
 }
 
-func (service *userService) ResetPasswordByEmail(input request.UserResetPasswordRequest) (entity.UserResetPassword, error) {
+func (service *userService) RequestResetPasswordToken(input request.UserResetPasswordRequest) (entity.UserResetPassword, error) {
 	token := entity.UserResetPassword{}
 
 	email := input.Email
@@ -155,7 +155,7 @@ func (service *userService) ResetPasswordByEmail(input request.UserResetPassword
 
 	token.Email = user.Email
 	token.Token = helper.GenerateRandomKey(8)
-	token.ExpiredAt = time.Now().Add(time.Minute * 5)
+	token.ExpiredAt = time.Now().Add(time.Minute * 10)
 
 	newToken, err := service.userRepository.InsertTokenResetPassword(token)
 	if err != nil {
@@ -165,7 +165,7 @@ func (service *userService) ResetPasswordByEmail(input request.UserResetPassword
 	return newToken, nil
 }
 
-func (service *userService) ResetPasswordToken(input request.UserResetPasswordTokenRequest) (entity.User, error) {
+func (service *userService) VerifyResetPasswordToken(input request.UserResetPasswordTokenRequest) (entity.User, error) {
 	user, err := service.userRepository.FindByEmail(input.Email)
 	if err != nil {
 		return user, err

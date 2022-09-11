@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"pawang-backend/exception"
 	"pawang-backend/model/request"
 	"pawang-backend/model/response"
@@ -10,12 +11,13 @@ import (
 )
 
 type userHandler struct {
-	userService service.UserService
-	authService service.AuthService
+	userService  service.UserService
+	authService  service.AuthService
+	emailService service.EmailService
 }
 
-func NewUserHandler(userService service.UserService, authService service.AuthService) *userHandler {
-	return &userHandler{userService, authService}
+func NewUserHandler(userService service.UserService, authService service.AuthService, emailService service.EmailService) *userHandler {
+	return &userHandler{userService, authService, emailService}
 }
 
 func (handler *userHandler) RegisterUser(c *fiber.Ctx) error {
@@ -67,14 +69,14 @@ func (handler *userHandler) LoginUser(c *fiber.Ctx) error {
 
 	user, err := handler.userService.Login(input)
 	if err != nil {
-		response := exception.ResponseError(false, err.Error(), fiber.StatusBadRequest, nil)
+		response := exception.ResponseError(false, err.Error(), fiber.StatusUnauthorized, nil)
 		return c.Status(fiber.StatusUnauthorized).JSON(response)
 	}
 
 	token, err := handler.authService.GenerateToken(user.ID)
 	if err != nil {
-		response := exception.ResponseError(false, err.Error(), fiber.StatusBadRequest, nil)
-		return c.Status(fiber.StatusBadRequest).JSON(response)
+		response := exception.ResponseError(false, err.Error(), fiber.StatusUnauthorized, nil)
+		return c.Status(fiber.StatusUnauthorized).JSON(response)
 	}
 
 	formatter := response.FormatRegisterUserResponse(user, token)
@@ -154,7 +156,7 @@ func (handler *userHandler) UserProfile(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response)
 }
 
-func (handler *userHandler) ResetPasswordByEmail(c *fiber.Ctx) error {
+func (handler *userHandler) RequestResetPasswordToken(c *fiber.Ctx) error {
 	var input request.UserResetPasswordRequest
 
 	if err := c.BodyParser(&input); err != nil {
@@ -169,8 +171,16 @@ func (handler *userHandler) ResetPasswordByEmail(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	_, err := handler.userService.ResetPasswordByEmail(input)
+	tokenReset, err := handler.userService.RequestResetPasswordToken(input)
 	if err != nil {
+		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	bodyMessage := fmt.Sprintf("<p>Gunakan kode ini untuk mengatur ulang kata sandi akun Anda: <strong>%s</strong>. Kode hanya berlaku 10 menit.</p>", tokenReset.Token)
+	err = handler.emailService.SendEmail(input.Email, "Kode Lupa Kata Sandi", bodyMessage)
+	if err != nil {
+		fmt.Println(err.Error())
 		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(response)
 	}
@@ -179,7 +189,7 @@ func (handler *userHandler) ResetPasswordByEmail(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response)
 }
 
-func (handler *userHandler) ResetPasswordWithToken(c *fiber.Ctx) error {
+func (handler *userHandler) VerifyResetPasswordToken(c *fiber.Ctx) error {
 	var input request.UserResetPasswordTokenRequest
 
 	if err := c.BodyParser(&input); err != nil {
@@ -194,7 +204,7 @@ func (handler *userHandler) ResetPasswordWithToken(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	_, err := handler.userService.ResetPasswordToken(input)
+	_, err := handler.userService.VerifyResetPasswordToken(input)
 	if err != nil {
 		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(response)
