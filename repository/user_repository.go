@@ -13,6 +13,7 @@ type UserRepository interface {
 	Update(user entity.User) (entity.User, error)
 	InsertTokenResetPassword(token entity.UserResetPassword) (entity.UserResetPassword, error)
 	FindTokenResetPassword(token string) (entity.UserResetPassword, error)
+	DeleteTokenResetPassword(token entity.UserResetPassword) error
 }
 
 type userRepository struct {
@@ -75,4 +76,12 @@ func (repository *userRepository) FindTokenResetPassword(token string) (entity.U
 	}
 
 	return tokens, nil
+}
+
+func (repository *userRepository) DeleteTokenResetPassword(token entity.UserResetPassword) error {
+	if err := repository.database.Delete(&token).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

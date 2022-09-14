@@ -28,7 +28,7 @@ func Database() (*gorm.DB, error) {
 		return db, err
 	}
 
-	db.AutoMigrate(entity.User{}, entity.Wallet{}, entity.Category{}, entity.Transaction{}, entity.SubCategory{}, entity.UserResetPassword{})
+	db.AutoMigrate(entity.User{}, entity.Wallet{}, entity.Category{}, entity.Transaction{}, entity.SubCategory{}, entity.UserResetPassword{}, entity.UserNotification{})
 
 	return db, nil
 }

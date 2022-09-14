@@ -11,13 +11,14 @@ import (
 )
 
 type userHandler struct {
-	userService  service.UserService
-	authService  service.AuthService
-	emailService service.EmailService
+	userService         service.UserService
+	authService         service.AuthService
+	emailService        service.EmailService
+	notificationService service.NotificationService
 }
 
-func NewUserHandler(userService service.UserService, authService service.AuthService, emailService service.EmailService) *userHandler {
-	return &userHandler{userService, authService, emailService}
+func NewUserHandler(userService service.UserService, authService service.AuthService, emailService service.EmailService, notificationService service.NotificationService) *userHandler {
+	return &userHandler{userService, authService, emailService, notificationService}
 }
 
 func (handler *userHandler) RegisterUser(c *fiber.Ctx) error {
@@ -42,6 +43,12 @@ func (handler *userHandler) RegisterUser(c *fiber.Ctx) error {
 	}
 
 	token, err := handler.authService.GenerateToken(newUser.ID)
+	if err != nil {
+		response := exception.ResponseError(false, "", fiber.StatusUnauthorized, err.Error())
+		return c.Status(fiber.StatusUnauthorized).JSON(response)
+	}
+
+	_, err = handler.notificationService.AddUserNotification(newUser.ID, input.OnesignalId)
 	if err != nil {
 		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(response)
@@ -78,6 +85,14 @@ func (handler *userHandler) LoginUser(c *fiber.Ctx) error {
 		response := exception.ResponseError(false, err.Error(), fiber.StatusUnauthorized, nil)
 		return c.Status(fiber.StatusUnauthorized).JSON(response)
 	}
+
+	_, err = handler.notificationService.AddUserNotification(user.ID, input.OnesignalId)
+	if err != nil {
+		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	handler.notificationService.SendNotification("Selamat Datang", user.Name, input.OnesignalId)
 
 	formatter := response.FormatRegisterUserResponse(user, token)
 	response := response.ResponseSuccess(true, "User logged in successfully", formatter)
@@ -160,20 +175,20 @@ func (handler *userHandler) RequestResetPasswordToken(c *fiber.Ctx) error {
 	var input request.UserResetPasswordRequest
 
 	if err := c.BodyParser(&input); err != nil {
-		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+		response := exception.ResponseError(false, "1", fiber.StatusBadRequest, err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
 	// Validation Input
 	errors := exception.ValidateInput(input)
 	if errors != nil {
-		response := exception.ResponseError(false, "", fiber.StatusBadRequest, errors)
+		response := exception.ResponseError(false, "2", fiber.StatusBadRequest, errors)
 		return c.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
 	tokenReset, err := handler.userService.RequestResetPasswordToken(input)
 	if err != nil {
-		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+		response := exception.ResponseError(false, "3", fiber.StatusBadRequest, err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
@@ -181,7 +196,7 @@ func (handler *userHandler) RequestResetPasswordToken(c *fiber.Ctx) error {
 	err = handler.emailService.SendEmail(input.Email, "Kode Lupa Kata Sandi", bodyMessage)
 	if err != nil {
 		fmt.Println(err.Error())
-		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+		response := exception.ResponseError(false, "4", fiber.StatusBadRequest, err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
@@ -210,6 +225,36 @@ func (handler *userHandler) VerifyResetPasswordToken(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	response := response.ResponseSuccess(true, "Success reset password, please re-login !", nil)
+	response := response.ResponseSuccess(true, "Token Valid !", nil)
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+func (handler *userHandler) ResetPasswordConfirmation(c *fiber.Ctx) error {
+	var input request.UserResetPasswordConfirmation
+
+	if err := c.BodyParser(&input); err != nil {
+		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	// Validation Input
+	errors := exception.ValidateInput(input)
+	if errors != nil {
+		response := exception.ResponseError(false, "", fiber.StatusBadRequest, errors)
+		return c.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	if input.Password != input.PasswordConfirmation {
+		response := exception.ResponseError(false, "Password Konfirmasi Tidak Sesuai", fiber.StatusBadRequest, nil)
+		return c.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	_, err := handler.userService.ResetPasswordConfirmation(input)
+	if err != nil {
+		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	response := response.ResponseSuccess(true, "Berhasil Membuat Password Baru, Silahkan Login Kembali !", nil)
 	return c.Status(fiber.StatusOK).JSON(response)
 }

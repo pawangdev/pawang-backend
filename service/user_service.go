@@ -16,7 +16,8 @@ type UserService interface {
 	ChangeProfile(userID int, input request.UserChangeProfileRequest) (entity.User, error)
 	Profile(userID int) (entity.User, error)
 	RequestResetPasswordToken(input request.UserResetPasswordRequest) (entity.UserResetPassword, error)
-	VerifyResetPasswordToken(input request.UserResetPasswordTokenRequest) (entity.User, error)
+	VerifyResetPasswordToken(input request.UserResetPasswordTokenRequest) (bool, error)
+	ResetPasswordConfirmation(input request.UserResetPasswordConfirmation) (bool, error)
 }
 
 type userService struct {
@@ -165,42 +166,73 @@ func (service *userService) RequestResetPasswordToken(input request.UserResetPas
 	return newToken, nil
 }
 
-func (service *userService) VerifyResetPasswordToken(input request.UserResetPasswordTokenRequest) (entity.User, error) {
-	user, err := service.userRepository.FindByEmail(input.Email)
-	if err != nil {
-		return user, err
-	}
-
+func (service *userService) VerifyResetPasswordToken(input request.UserResetPasswordTokenRequest) (bool, error) {
 	token, err := service.userRepository.FindTokenResetPassword(input.Token)
 	if err != nil {
-		return user, errors.New("token does not same")
+		return false, errors.New("token does not same")
 	}
 
-	if token.Token != input.Token {
-		return user, errors.New("token does not same")
-	}
+	// user, err := service.userRepository.FindByEmail(token.Email)
+	// if err != nil {
+	// 	return user, err
+	// }
 
-	if token.Email != user.Email {
-		return user, errors.New("token does not same")
-	}
+	// if token.Token != input.Token {
+	// 	return user, errors.New("token does not same")
+	// }
+
+	// if token.Email != user.Email {
+	// 	return user, errors.New("token does not same")
+	// }
 
 	now := time.Now()
 
 	if now.Before(token.ExpiredAt) {
-		hashPassword, err := helper.HashPassword(input.Password)
-		if err != nil {
-			return user, err
-		}
-
-		user.Password = hashPassword
+		return true, nil
 	} else {
-		return user, errors.New("token has expired")
+		return false, errors.New("token has expired")
 	}
 
-	updateUser, err := service.userRepository.Update(user)
+	// updateUser, err := service.userRepository.Update(user)
+	// if err != nil {
+	// 	return updateUser, err
+	// }
+}
+
+func (service *userService) ResetPasswordConfirmation(input request.UserResetPasswordConfirmation) (bool, error) {
+	token, err := service.userRepository.FindTokenResetPassword(input.Token)
 	if err != nil {
-		return updateUser, err
+		return false, errors.New("token does not same")
 	}
 
-	return updateUser, nil
+	user, err := service.userRepository.FindByEmail(token.Email)
+	if err != nil {
+		return false, err
+	}
+
+	if token.Token != input.Token {
+		return false, errors.New("token does not same")
+	}
+
+	if token.Email != user.Email {
+		return false, errors.New("token does not same")
+	}
+
+	newPasswordHash, err := helper.HashPassword(input.Password)
+	if err != nil {
+		return false, err
+	}
+	user.Password = newPasswordHash
+
+	_, err = service.userRepository.Update(user)
+	if err != nil {
+		return false, err
+	}
+
+	err = service.userRepository.DeleteTokenResetPassword(token)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

@@ -23,11 +23,13 @@ func NewRouter(router fiber.Router) {
 
 func newUserRouter(router fiber.Router, db *gorm.DB) {
 	userRepository := repository.NewUserRepository(db)
+	userNotificationRepository := repository.NewUserNotificationRepository(db)
 	walletRepository := repository.NewWalletRepository(db)
 	userService := service.NewUserService(userRepository, walletRepository)
 	authService := service.NewAuthService()
 	emailService := service.NewEmailService()
-	userHandler := handler.NewUserHandler(userService, authService, emailService)
+	notificationService := service.NewNotificationService(userNotificationRepository)
+	userHandler := handler.NewUserHandler(userService, authService, emailService, notificationService)
 
 	router.Post("/users/register", userHandler.RegisterUser)
 	router.Post("/users/login", userHandler.LoginUser)
@@ -36,6 +38,7 @@ func newUserRouter(router fiber.Router, db *gorm.DB) {
 	router.Get("/users/profile", middleware.Authenticated(), userHandler.UserProfile)
 	router.Post("/users/reset-password", userHandler.RequestResetPasswordToken)
 	router.Post("/users/reset-password/token", userHandler.VerifyResetPasswordToken)
+	router.Post("/users/reset-password/password-confirmation", userHandler.ResetPasswordConfirmation)
 }
 
 func newWalletRouter(router fiber.Router, db *gorm.DB) {
