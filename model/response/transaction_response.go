@@ -2,6 +2,7 @@ package response
 
 import (
 	"pawang-backend/entity"
+	"pawang-backend/helper"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func FormatCreateTransactionResponse(transaction entity.Transaction) CreateTrans
 		ID:            transaction.ID,
 		Amount:        transaction.Amount,
 		CategoryID:    transaction.CategoryID,
-		SubCategoryID: transaction.SubCategoryID,
+		SubCategoryID: int(transaction.SubCategoryID.Int32),
 		WalletID:      transaction.WalletID,
 		Type:          transaction.Type,
 		Description:   transaction.Description,
@@ -62,7 +63,7 @@ func FormatGetTransactionResponse(transaction entity.Transaction) GetTransaction
 		ID:            transaction.ID,
 		Amount:        transaction.Amount,
 		CategoryID:    transaction.CategoryID,
-		SubCategoryID: transaction.SubCategoryID,
+		SubCategoryID: int(transaction.SubCategoryID.Int32),
 		WalletID:      transaction.WalletID,
 		Type:          transaction.Type,
 		Description:   transaction.Description,
@@ -81,7 +82,7 @@ func FormatGetTransactionResponse(transaction entity.Transaction) GetTransaction
 		response.Category = formatCategory
 	}
 
-	if transaction.SubCategoryID != 0 {
+	if transaction.SubCategoryID != helper.IntToSQLNullInt32(0) {
 		formatSubCategory := FormatGetSubCategoryResponse(transaction.SubCategory)
 		response.SubCategory = formatSubCategory
 	}

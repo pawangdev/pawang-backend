@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"pawang-backend/entity"
+	"pawang-backend/helper"
 	"pawang-backend/model/request"
 	"pawang-backend/repository"
 )
@@ -58,7 +59,7 @@ func (service *transactionService) CreateTransaction(userID int, input request.C
 			return transaction, errors.New("sub category does not exist on main category")
 		}
 
-		transaction.SubCategoryID = input.SubCategoryID
+		transaction.SubCategoryID = helper.IntToSQLNullInt32(int32(input.SubCategoryID))
 	}
 
 	wallet, err := service.walletRepository.FindByID(input.WalletID)
@@ -196,7 +197,7 @@ func (service *transactionService) UpdateTransaction(transactionID int, userID i
 			return transaction, errors.New("sub category does not exist on main category")
 		}
 
-		transaction.SubCategoryID = input.SubCategoryID
+		transaction.SubCategoryID = helper.IntToSQLNullInt32(int32(input.SubCategoryID))
 	}
 
 	updateTransaction, err := service.transactionRepository.Update(transaction)

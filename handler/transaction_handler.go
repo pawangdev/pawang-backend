@@ -46,7 +46,7 @@ func (handler *transactionHandler) CreateTransaction(c *fiber.Ctx) error {
 	if isUpload == "true" {
 		file, err := c.FormFile("image")
 		if err != nil {
-			response := exception.ResponseError(false, "gak enek image", fiber.StatusBadRequest, err.Error())
+			response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(response)
 		}
 
@@ -56,13 +56,13 @@ func (handler *transactionHandler) CreateTransaction(c *fiber.Ctx) error {
 
 		err = helper.CreateFolder(dirPath)
 		if err != nil {
-			response := exception.ResponseError(false, "gak enek image 2", fiber.StatusBadRequest, err.Error())
+			response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(response)
 		}
 
 		err = c.SaveFile(file, fileName)
 		if err != nil {
-			response := exception.ResponseError(false, "gak enek image 3", fiber.StatusBadRequest, err.Error())
+			response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(response)
 		}
 
@@ -71,7 +71,7 @@ func (handler *transactionHandler) CreateTransaction(c *fiber.Ctx) error {
 
 	newTransaction, err := handler.transactionService.CreateTransaction(userID, input)
 	if err != nil {
-		response := exception.ResponseError(false, "gak enek image 4", fiber.StatusBadRequest, err.Error())
+		response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
@@ -124,16 +124,24 @@ func (handler *transactionHandler) UpdateTransaction(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(response)
 	}
 
-	contentType := strings.Split(c.Get("Content-Type"), ";")[0]
+	isUpload := c.FormValue("is_upload", "false")
 
-	if contentType == "multipart/form-data" {
+	if isUpload == "true" {
 		file, err := c.FormFile("image")
 		if err != nil {
 			response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(response)
 		}
+
+		dirPath := fmt.Sprintf("./public/uploads/transactions/%v", userID)
 		fileName := fmt.Sprintf("./public/uploads/transactions/%v/%d-%s", userID, time.Now().Unix(), file.Filename)
 		imageUrl := fmt.Sprintf("/api/storage/uploads/transactions/%v/%d-%s", userID, time.Now().Unix(), file.Filename)
+
+		err = helper.CreateFolder(dirPath)
+		if err != nil {
+			response := exception.ResponseError(false, "", fiber.StatusBadRequest, err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(response)
+		}
 
 		err = c.SaveFile(file, fileName)
 		if err != nil {
@@ -141,8 +149,8 @@ func (handler *transactionHandler) UpdateTransaction(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).JSON(response)
 		}
 
+		// Delete Old File
 		if transaction.ImageUrl != "" {
-			// Delete Old File
 			getNameOldFile := strings.Split(transaction.ImageUrl, "/")[7]
 			fileOldPath := fmt.Sprintf("./public/uploads/transactions/%v/%v", userID, getNameOldFile)
 			err = helper.DeleteFile(fileOldPath)
@@ -161,7 +169,7 @@ func (handler *transactionHandler) UpdateTransaction(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(response)
 	}
 
-	formatter := response.FormatGetTransactionResponse(updateTransaction)
+	formatter := response.FormatCreateTransactionResponse(updateTransaction)
 	response := response.ResponseSuccess(true, "Transaction updated successfully", formatter)
 	return c.Status(fiber.StatusOK).JSON(response)
 }

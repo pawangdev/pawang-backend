@@ -1,6 +1,8 @@
 package request
 
-import "time"
+import (
+	"time"
+)
 
 type CreateTransactionRequest struct {
 	Amount        int    `json:"amount" form:"amount" xml:"amount" validate:"required"`
