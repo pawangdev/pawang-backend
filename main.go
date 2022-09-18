@@ -7,10 +7,14 @@ import (
 	"pawang-backend/seeder"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
 	app := fiber.New()
+
+	// CORS
+	app.Use(cors.New())
 
 	// Database
 	db, err := config.Database()

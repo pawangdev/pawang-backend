@@ -28,13 +28,13 @@ func FormatCreateCategoryResponse(category entity.Category) CreateCategoryRespon
 }
 
 type GetCategoryResponse struct {
-	ID            int                      `json:"id"`
-	Name          string                   `json:"name"`
-	Icon          string                   `json:"icon"`
-	Type          string                   `json:"type"`
-	SubCategories []GetSubCategoryResponse `json:"sub_categories"`
-	CreatedAt     time.Time                `json:"created_at"`
-	UpdatedAt     time.Time                `json:"updated_at"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+	Icon string `json:"icon"`
+	Type string `json:"type"`
+	// SubCategories []GetSubCategoryResponse `json:"sub_categories"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func FormatGetCategoryResponse(category entity.Category) GetCategoryResponse {
@@ -47,9 +47,9 @@ func FormatGetCategoryResponse(category entity.Category) GetCategoryResponse {
 		UpdatedAt: category.UpdatedAt,
 	}
 
-	formatSubCategories := FormatGetSubCategoriesResponse(category.SubCategories)
+	// formatSubCategories := FormatGetSubCategoriesResponse(category.SubCategories)
 
-	response.SubCategories = formatSubCategories
+	// response.SubCategories = formatSubCategories
 
 	return response
 }

@@ -16,7 +16,7 @@ func NewRouter(router fiber.Router) {
 	newUserRouter(router, db)
 	newWalletRouter(router, db)
 	newCategoryRouter(router, db)
-	newSubCategoryRouter(router, db)
+	// newSubCategoryRouter(router, db)
 	newTransactionRouter(router, db)
 	newStaticRouter(router)
 }
@@ -66,16 +66,16 @@ func newCategoryRouter(router fiber.Router, db *gorm.DB) {
 	// router.Delete("/categories/delete/:categoryId", middleware.Authenticated(), categoryHandler.DeleteCategory)
 }
 
-func newSubCategoryRouter(router fiber.Router, db *gorm.DB) {
-	subCategoryRepository := repository.NewSubCategoryRepository(db)
-	subCategoryService := service.NewSubCategoryService(subCategoryRepository)
-	authService := service.NewAuthService()
-	subCategoryHandler := handler.NewSubCategoryHandler(subCategoryService, authService)
+// func newSubCategoryRouter(router fiber.Router, db *gorm.DB) {
+// 	subCategoryRepository := repository.NewSubCategoryRepository(db)
+// 	subCategoryService := service.NewSubCategoryService(subCategoryRepository)
+// 	authService := service.NewAuthService()
+// 	subCategoryHandler := handler.NewSubCategoryHandler(subCategoryService, authService)
 
-	router.Post("/categories/sub-categories/create", middleware.Authenticated(), subCategoryHandler.CreateSubCategory)
-	router.Put("/categories/sub-categories/update/:subcategoryId", middleware.Authenticated(), subCategoryHandler.UpdateSubCategory)
-	router.Delete("/categories/sub-categories/delete/:subcategoryId", middleware.Authenticated(), subCategoryHandler.DeleteSubCategory)
-}
+// 	router.Post("/categories/sub-categories/create", middleware.Authenticated(), subCategoryHandler.CreateSubCategory)
+// 	router.Put("/categories/sub-categories/update/:subcategoryId", middleware.Authenticated(), subCategoryHandler.UpdateSubCategory)
+// 	router.Delete("/categories/sub-categories/delete/:subcategoryId", middleware.Authenticated(), subCategoryHandler.DeleteSubCategory)
+// }
 
 func newTransactionRouter(router fiber.Router, db *gorm.DB) {
 	transactionRepository := repository.NewTransactionRepository(db)

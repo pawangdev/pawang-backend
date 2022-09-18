@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"pawang-backend/entity"
-	"pawang-backend/helper"
 	"pawang-backend/model/request"
 	"pawang-backend/repository"
 )
@@ -48,19 +47,19 @@ func (service *transactionService) CreateTransaction(userID int, input request.C
 		return transaction, errors.New("category type mismatch, please check your type transaction")
 	}
 
-	if input.SubCategoryID != 0 {
-		// Check Sub Category ID on Main Category
-		subCategory, err := service.subCategoryRepository.FindByID(input.SubCategoryID)
-		if err != nil {
-			return transaction, err
-		}
+	// if input.SubCategoryID != 0 {
+	// 	// Check Sub Category ID on Main Category
+	// 	subCategory, err := service.subCategoryRepository.FindByID(input.SubCategoryID)
+	// 	if err != nil {
+	// 		return transaction, err
+	// 	}
 
-		if subCategory.CategoryID != input.CategoryID {
-			return transaction, errors.New("sub category does not exist on main category")
-		}
+	// 	if subCategory.CategoryID != input.CategoryID {
+	// 		return transaction, errors.New("sub category does not exist on main category")
+	// 	}
 
-		transaction.SubCategoryID = helper.IntToSQLNullInt32(int32(input.SubCategoryID))
-	}
+	// 	transaction.SubCategoryID = input.SubCategoryID
+	// }
 
 	wallet, err := service.walletRepository.FindByID(input.WalletID)
 	if err != nil {
@@ -187,18 +186,18 @@ func (service *transactionService) UpdateTransaction(transactionID int, userID i
 	transaction.Date = input.Date
 	transaction.UserID = userID
 
-	if input.SubCategoryID != 0 {
-		subCategory, err := service.subCategoryRepository.FindByID(input.SubCategoryID)
-		if err != nil {
-			return transaction, err
-		}
+	// if input.SubCategoryID != 0 {
+	// 	subCategory, err := service.subCategoryRepository.FindByID(input.SubCategoryID)
+	// 	if err != nil {
+	// 		return transaction, err
+	// 	}
 
-		if subCategory.CategoryID != input.CategoryID {
-			return transaction, errors.New("sub category does not exist on main category")
-		}
+	// 	if subCategory.CategoryID != input.CategoryID {
+	// 		return transaction, errors.New("sub category does not exist on main category")
+	// 	}
 
-		transaction.SubCategoryID = helper.IntToSQLNullInt32(int32(input.SubCategoryID))
-	}
+	// 	transaction.SubCategoryID = input.SubCategoryID
+	// }
 
 	updateTransaction, err := service.transactionRepository.Update(transaction)
 	if err != nil {
