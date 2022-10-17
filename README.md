@@ -2,9 +2,9 @@
 
 ## Tech
 Pawang Rest API uses a number of open source projects to work properly:
-- [Golang](https://go.dev/) - Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
-- [Fiber](https://gofiber.io/) - Fiber is an Express inspired web framework built on top of Fasthttp, the fastest HTTP engine for Go.
-- [GORM](https://gorm.io/) - The fantastic ORM library for Golang.
+- [NodeJS](https://nodejs.org/) - Node.js® is an open-source, cross-platform JavaScript runtime environment.
+- [ExpressJS](https://expressjs.com/) - Node.js® is an open-source, cross-platform JavaScript runtime environment.
+- [Prisma ORM](https://www.prisma.io/) - Next-generation Node.js and TypeScript ORM.
 - [Docker](https://www.docker.com/) - Develop faster. Run anywhere.
 - [MariaDB](https://mariadb.org/) - MariaDB Server is one of the most popular open source relational databases.
 
@@ -23,5 +23,5 @@ Verify the deployment by navigating to your server address in
 your preferred browser.
 
 ```sh
-127.0.0.1:1234/api
+127.0.0.1:5000/api
 ```

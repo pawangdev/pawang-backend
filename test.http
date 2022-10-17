@@ -1,0 +1,205 @@
+@host = http://127.0.0.1:5000/api
+@contentType = application/json
+@dateNow = {{$datetime iso8601}}
+
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjY0NzE3NzUzfQ.aTKMO1BbElRC2YwmiOU_fP78LT1Xnpe00lAQHRQxmnQ
+
+### Auth ###
+# Login
+POST {{host}}/auth/login
+Content-Type: {{contentType}}
+
+{
+    "email": "bintangrezeka@gmail.com",
+    "password": "password123"
+}
+###
+
+# Register
+POST {{host}}/auth/register
+Content-Type: {{contentType}}
+
+{
+    "name": "Bintang Rezeka Ramadani",
+    "email": "bintangrezeka@gmail.com",
+    "password": "password",
+    "gender": "male",
+    "phone": "081330699665"
+}
+###
+
+# Profile
+GET {{host}}/auth/profile
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+###
+
+# Change Profile
+POST {{host}}/auth/change-profile
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+    "name": "Bintang Rezeka Ramadania",
+    "gender": "male",
+    "phone": "0813345125125"
+}
+###
+
+# Change Password
+POST {{host}}/auth/change-password
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+    "old_password": "password123",
+    "new_password": "password123",
+    "new_password_confirm": "password123"
+}
+###
+
+# Reset Password Request
+POST {{host}}/auth/reset-password/request
+Content-Type: {{contentType}}
+
+{
+    "email": "bintangrezeka@gmail.com"
+}
+###
+
+# Verify Reset Password
+POST {{host}}/auth/reset-password/verify
+Content-Type: {{contentType}}
+
+{
+    "email": "bintangrezeka@gmail.com",
+    "token": "159864"
+}
+###
+
+# Reset Password after Verify
+POST {{host}}/auth/reset-password
+Content-Type: {{contentType}}
+
+{
+    "email": "bintangrezeka@gmail.com",
+    "token": "159864",
+    "password": "password123",
+    "password_confirm": "password123"
+}
+###
+
+### Wallets ###
+# Get Wallets
+GET {{host}}/wallets
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+###
+
+# Create Wallets
+POST {{host}}/wallets/create
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+    "name": "Tabungan Bulanan",
+    "balance": 100000
+}
+###
+
+# Update Wallets
+PUT {{host}}/wallets/update/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+    "name": "Dompet",
+    "balance": 50000
+}
+###
+
+# Delete Wallets
+DELETE {{host}}/wallets/delete/2
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+###
+
+### Transactions ###
+# Get Transactions
+GET {{host}}/transactions
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+###
+
+# Create Transactions
+POST {{host}}/transactions/create
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+    "amount": 20000,
+    "category_id": 1,
+    "wallet_id": 2,
+    "subcategory_id": null,
+    "type": "outcome",
+    "description": "Beli Cabai",
+    "date": "2022-10-01T10:21:05Z"
+}
+###
+
+# Update Transactions
+PUT {{host}}/transactions/update/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+    "amount": 15000,
+    "category_id": 3,
+    "wallet_id": 1,
+    "subcategory_id": null,
+    "type": "outcome",
+    "description": "",
+    "date": "2022-10-01T10:21:05Z"
+}
+###
+
+# Delete Transactions
+DELETE {{host}}/transactions/delete/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+###
+
+### Category ###
+# Get Category
+GET {{host}}/categories
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+###
+
+# Create Category
+POST {{host}}/categories/create/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+    "name": "Sayuran",
+    "type": "outcome"
+}
+###
+
+# Update Category
+PUT {{host}}/categories/update/1/2
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+    "name": "Sayuran",
+    "type": "outcome"
+}
+###
+
+# Delete Category
+DELETE {{host}}/categories/delete/1/2
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+###
