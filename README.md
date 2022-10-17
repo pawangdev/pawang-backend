@@ -25,3 +25,6 @@ your preferred browser.
 ```sh
 127.0.0.1:5000/api
 ```
+
+Documentation Rest API
+- [Pawang API Documentation](https://api.pawang.studio/api/doc/)
