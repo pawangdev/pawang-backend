@@ -32,5 +32,5 @@ app.use((error, req, res, next) => {
 });
 
 app.listen(process.env.APP_PORT || 5000, () => {
-    console.log("🚀 Server Started on port", process.env.APP_PORT);
+    console.log("🚀 Server Started on port", process.env.APP_PORT || 5000);
 });

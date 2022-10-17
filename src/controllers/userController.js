@@ -465,7 +465,7 @@ module.exports = {
             email: joi.string().email().required(),
             token: joi.string().min(6).required(),
             password: joi.string().min(8).required(),
-            password_confirm: joi.ref('new_password'),
+            password_confirm: joi.ref('password'),
         });
 
         try {
