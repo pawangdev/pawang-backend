@@ -4,6 +4,7 @@
   "description": "RestAPI for Mobile & Frontend Pawang",
   "main": "index.js",
   "scripts": {
+    "start": "node index",
     "dev": "nodemon index",
     "swagger-autogen": "node swagger.js"
   },
