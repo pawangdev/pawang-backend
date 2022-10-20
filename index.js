@@ -3,6 +3,8 @@ const dotenv = require("dotenv")
 const cors = require("cors")
 dotenv.config();
 
+const { scheduler } = require('./src/controllers/taskReminderController');
+
 const routes = require("./src/routes/index");
 
 const app = express();
@@ -30,6 +32,9 @@ app.use((error, req, res, next) => {
 
     res.status(status).json({ message: message, data: data });
 });
+
+// Notification Scheduler
+scheduler();
 
 app.listen(process.env.APP_PORT || 5000, () => {
     console.log("🚀 Server Started on port", process.env.APP_PORT || 5000);

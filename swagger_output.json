@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "1.0.0",
-    "title": "REST API",
+    "title": "Pawang Rest API",
+    "version": "3.0.0",
     "description": ""
   },
   "host": "localhost:5000",
@@ -34,6 +34,9 @@
                   "example": "any"
                 },
                 "phone": {
+                  "example": "any"
+                },
+                "onesignal_id": {
                   "example": "any"
                 }
               }
@@ -67,6 +70,9 @@
                   "example": "any"
                 },
                 "password": {
+                  "example": "any"
+                },
+                "onesignal_id": {
                   "example": "any"
                 }
               }
@@ -112,6 +118,9 @@
                   "example": "any"
                 },
                 "image_profile": {
+                  "example": "any"
+                },
+                "onesignal_id": {
                   "example": "any"
                 }
               }
@@ -607,9 +616,6 @@
                 "subcategory_id": {
                   "example": "any"
                 },
-                "type": {
-                  "example": "any"
-                },
                 "description": {
                   "example": "any"
                 },
@@ -708,6 +714,11 @@
             "name": "authorization",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {
@@ -775,9 +786,6 @@
               "properties": {
                 "name": {
                   "example": "any"
-                },
-                "type": {
-                  "example": "any"
                 }
               }
             }
@@ -830,9 +838,6 @@
               "type": "object",
               "properties": {
                 "name": {
-                  "example": "any"
-                },
-                "type": {
                   "example": "any"
                 }
               }
@@ -969,10 +974,13 @@
                 "name": {
                   "example": "any"
                 },
-                "month": {
+                "type": {
                   "example": "any"
                 },
-                "days": {
+                "date": {
+                  "example": "any"
+                },
+                "time": {
                   "example": "any"
                 },
                 "is_active": {
@@ -1019,10 +1027,13 @@
                 "name": {
                   "example": "any"
                 },
-                "month": {
+                "type": {
                   "example": "any"
                 },
-                "days": {
+                "date": {
+                  "example": "any"
+                },
+                "time": {
                   "example": "any"
                 },
                 "is_active": {

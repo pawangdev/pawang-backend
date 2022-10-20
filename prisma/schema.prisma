@@ -80,13 +80,15 @@ model users {
 }
 
 model task_reminders {
-  id        Int           @id @default(autoincrement())
-  type      reminder_type
-  name      String        @db.VarChar(255)
-  days      String        @db.VarChar(255)
-  is_active Boolean       @default(true)
-  user_id   Int
-  user      users         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         Int           @id @default(autoincrement())
+  name       String        @db.VarChar(255)
+  type       reminder_type
+  date       DateTime
+  is_active  Boolean       @default(true)
+  user_id    Int
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
+  user       users         @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model wallets {
@@ -103,6 +105,7 @@ model wallets {
 }
 
 enum reminder_type {
+  once
   daily
   weekly
   monthly
