@@ -5,9 +5,9 @@ const doc = {
         title: 'Pawang Rest API',
         version: '3.0.0'
     },
-    host: 'localhost:5000',
+    host: 'api.pawang.studio',
     basePath: '/api',
-    schemes: ['http'],
+    schemes: ['https'],
 };
 
 const outputFile = './swagger_output.json'
