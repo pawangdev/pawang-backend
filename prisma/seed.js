@@ -5,72 +5,72 @@ const prisma = new PrismaClient();
 const categoryData = [
     {
         name: 'Belanja',
-        icon: '/public/assets/categories/belanja.svg',
+        icon: '/public/assets/categories/belanja.png',
         type: 'outcome',
     },
     {
         name: 'Makan & Minum',
-        icon: '/public/assets/categories/makan-minum.svg',
+        icon: '/public/assets/categories/makan-minum.png',
         type: 'outcome',
     },
     {
         name: 'Transportasi',
-        icon: '/public/assets/categories/transportasi.svg',
+        icon: '/public/assets/categories/transportasi.png',
         type: 'outcome',
     },
     {
         name: 'Pakaian',
-        icon: '/public/assets/categories/pakaian.svg',
+        icon: '/public/assets/categories/pakaian.png',
         type: 'outcome',
     },
     {
         name: 'Pakaian',
-        icon: '/public/assets/categories/pakaian.svg',
+        icon: '/public/assets/categories/pakaian.png',
         type: 'outcome',
     },
     {
         name: 'Pendidikan',
-        icon: '/public/assets/categories/pendidikan.svg',
+        icon: '/public/assets/categories/pendidikan.png',
         type: 'outcome',
     },
     {
         name: 'Hiburan',
-        icon: '/public/assets/categories/hiburan.svg',
+        icon: '/public/assets/categories/hiburan.png',
         type: 'outcome',
     },
     {
         name: 'Elektronik',
-        icon: '/public/assets/categories/elektronik.svg',
+        icon: '/public/assets/categories/elektronik.png',
         type: 'outcome',
     },
     {
         name: 'Kesehatan',
-        icon: '/public/assets/categories/kesehatan.svg',
+        icon: '/public/assets/categories/kesehatan.png',
         type: 'outcome',
     },
     {
         name: 'Asuransi',
-        icon: '/public/assets/categories/asuransi.svg',
+        icon: '/public/assets/categories/asuransi.png',
         type: 'outcome',
     },
     {
         name: 'Pengeluaran Lainnya',
-        icon: '/public/assets/categories/pengeluaran-lainnya.svg',
+        icon: '/public/assets/categories/pengeluaran-lainnya.png',
         type: 'outcome',
     },
     {
         name: 'Gaji',
-        icon: '/public/assets/categories/gaji.svg',
+        icon: '/public/assets/categories/gaji.png',
         type: 'income',
     },
     {
         name: 'Orang Tua',
-        icon: '/public/assets/categories/orang-tua.svg',
+        icon: '/public/assets/categories/orang-tua.png',
         type: 'income',
     },
     {
         name: 'Pemasukkan Lainnya',
-        icon: '/public/assets/categories/pemasukan-lainnya.svg',
+        icon: '/public/assets/categories/pemasukan-lainnya.png',
         type: 'income',
     },
 ];
