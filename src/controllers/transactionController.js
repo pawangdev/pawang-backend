@@ -63,6 +63,47 @@ module.exports = {
             res.status(500).send(error.message);
         }
     },
+    detail: async (req, res) => {
+        try {
+            let totalIncome = 0;
+            let totalOutcome = 0;
+            let totalBalanceWallet = 0;
+            const transactions = await prisma.transactions.findMany({
+                where: {
+                    user_id: req.user.id
+                }
+            });
+
+            transactions.forEach((item) => {
+                if (item.type == "income") {
+                    totalIncome += item.amount;
+                } else {
+                    totalOutcome += item.amount;
+                }
+            });
+
+            const wallets = await prisma.wallets.findMany({
+                where: {
+                    user_id: req.user.id
+                }
+            });
+
+            wallets.forEach((item) => {
+                totalBalanceWallet += item.balance
+            });
+
+            res.status(200).json({
+                message: 'success retreived data!',
+                data: {
+                    total_income: totalIncome,
+                    total_outcome: totalOutcome,
+                    total_balance: totalBalanceWallet,
+                },
+            });
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
     create: async (req, res) => {
         const createTransactionSchema = joi.object({
             amount: joi.number().required(),

@@ -34,6 +34,7 @@ router.delete('/wallets/delete/:id', authMiddleware, walletController.destroy);
 
 // Transactions
 router.get('/transactions', authMiddleware, transactionController.index);
+router.get('/transactions/details', authMiddleware, transactionController.detail);
 router.get('/transactions/:id', authMiddleware, transactionController.show);
 router.post('/transactions/create', authMiddleware, transactionController.create);
 router.put('/transactions/update/:id', authMiddleware, transactionController.update);
