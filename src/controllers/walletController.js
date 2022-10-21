@@ -167,7 +167,7 @@ module.exports = {
                 }
             }
 
-            if (Number(balance) != 0) {
+            if (Number(balance) != 0 || Number(balance) != checkWallet.balance) {
                 if (checkWallet.balance < Number(balance)) {
                     await prisma.transactions.create({
                         data: {
