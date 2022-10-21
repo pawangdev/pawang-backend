@@ -101,10 +101,10 @@ module.exports = {
                 }
             });
 
-            if (Number(balance) > 0) {
+            if (Number(balance) != 0) {
                 await prisma.transactions.create({
                     data: {
-                        category_id: 15,
+                        category_id: 13,
                         type: "income",
                         user_id: req.user.id,
                         wallet_id: newWallet.id,
@@ -167,11 +167,11 @@ module.exports = {
                 }
             }
 
-            if (Number(balance) > 0) {
+            if (Number(balance) != 0) {
                 if (checkWallet.balance < Number(balance)) {
                     await prisma.transactions.create({
                         data: {
-                            category_id: 15,
+                            category_id: 13,
                             type: "income",
                             user_id: req.user.id,
                             wallet_id: checkWallet.id,
@@ -182,7 +182,7 @@ module.exports = {
                 } else {
                     await prisma.transactions.create({
                         data: {
-                            category_id: 16,
+                            category_id: 10,
                             type: "outcome",
                             user_id: req.user.id,
                             wallet_id: checkWallet.id,
