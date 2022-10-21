@@ -1,96 +1,99 @@
 const { PrismaClient } = require('@prisma/client');
+const e = require('express');
 const prisma = new PrismaClient();
 
 const categoryData = [
     {
         name: 'Belanja',
-        icon: '/public/assets/categories/Belanja.svg',
+        icon: '/public/assets/categories/belanja.svg',
         type: 'outcome',
     },
     {
-        name: 'Bensin',
-        icon: '/public/assets/categories/Bensin.svg',
-        type: 'outcome',
-    },
-    {
-        name: 'Donasi',
-        icon: '/public/assets/categories/Donasi.svg',
-        type: 'outcome',
-    },
-    {
-        name: 'Edukasi',
-        icon: '/public/assets/categories/Edukasi.svg',
-        type: 'outcome',
-    },
-    {
-        name: 'Gaji',
-        icon: '/public/assets/categories/Gaji.svg',
-        type: 'income',
-    },
-    {
-        name: 'Orang Tua',
-        icon: '/public/assets/categories/Bisnis.svg',
-        type: 'income',
-    },
-    {
-        name: 'Hiburan',
-        icon: '/public/assets/categories/Hiburan.svg',
-        type: 'outcome',
-    },
-    {
-        name: 'Kesehatan',
-        icon: '/public/assets/categories/Kesehatan.svg',
-        type: 'outcome',
-    },
-    {
-        name: 'Makanan & Minuman',
-        icon: '/public/assets/categories/Makanan & Minuman.svg',
-        type: 'outcome',
-    },
-    {
-        name: 'Pakaian',
-        icon: '/public/assets/categories/Pakaian.svg',
-        type: 'outcome',
-    },
-    {
-        name: 'Peliharaan',
-        icon: '/public/assets/categories/Peliharaan.svg',
-        type: 'outcome',
-    },
-    {
-        name: 'Perbaikan',
-        icon: '/public/assets/categories/Perbaikan.svg',
-        type: 'outcome',
-    },
-    {
-        name: 'Tagihan',
-        icon: '/public/assets/categories/Tagihan.svg',
+        name: 'Makan & Minum',
+        icon: '/public/assets/categories/makan-minum.svg',
         type: 'outcome',
     },
     {
         name: 'Transportasi',
-        icon: '/public/assets/categories/Transportasi.svg',
+        icon: '/public/assets/categories/transportasi.svg',
         type: 'outcome',
     },
     {
-        name: 'Pemasukkan Lainnya',
-        icon: '/public/assets/categories/Pemasukkan Lainnya.svg',
-        type: 'income',
+        name: 'Pakaian',
+        icon: '/public/assets/categories/pakaian.svg',
+        type: 'outcome',
+    },
+    {
+        name: 'Pakaian',
+        icon: '/public/assets/categories/pakaian.svg',
+        type: 'outcome',
+    },
+    {
+        name: 'Pendidikan',
+        icon: '/public/assets/categories/pendidikan.svg',
+        type: 'outcome',
+    },
+    {
+        name: 'Hiburan',
+        icon: '/public/assets/categories/hiburan.svg',
+        type: 'outcome',
+    },
+    {
+        name: 'Elektronik',
+        icon: '/public/assets/categories/elektronik.svg',
+        type: 'outcome',
+    },
+    {
+        name: 'Kesehatan',
+        icon: '/public/assets/categories/kesehatan.svg',
+        type: 'outcome',
+    },
+    {
+        name: 'Asuransi',
+        icon: '/public/assets/categories/asuransi.svg',
+        type: 'outcome',
     },
     {
         name: 'Pengeluaran Lainnya',
-        icon: '/public/assets/categories/Pengeluaran Lainnya.svg',
+        icon: '/public/assets/categories/pengeluaran-lainnya.svg',
         type: 'outcome',
+    },
+    {
+        name: 'Gaji',
+        icon: '/public/assets/categories/gaji.svg',
+        type: 'income',
+    },
+    {
+        name: 'Orang Tua',
+        icon: '/public/assets/categories/orang-tua.svg',
+        type: 'income',
+    },
+    {
+        name: 'Pemasukkan Lainnya',
+        icon: '/public/assets/categories/pemasukan-lainnya.svg',
+        type: 'income',
     },
 ];
 
 const main = async () => {
     console.log(`🔥 Start seeding ...`);
     for (const i of categoryData) {
-        const category = await prisma.categories.create({
-            data: i
+        const category = await prisma.categories.upsert({
+            where: {
+                name: i.name
+            },
+            create: {
+                name: e.name,
+                icon: e.icon,
+                type: e.type,
+            },
+            update: {
+                name: e.name,
+                icon: e.icon,
+                type: e.type,
+            }
         })
-        console.log(`Success create category ${category.id}`);
+        console.log(`Success create category ${category.name}`);
     }
     console.log(`🚀 Seeding finished ... `);
 }

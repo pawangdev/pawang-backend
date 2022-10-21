@@ -9,7 +9,7 @@ datasource db {
 
 model categories {
   id            Int               @id @default(autoincrement())
-  name          String            @db.VarChar(100)
+  name          String            @unique @db.VarChar(100)
   icon          String            @db.Text
   type          transactions_type
   created_at    DateTime          @default(now())
