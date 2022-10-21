@@ -83,14 +83,15 @@ const main = async () => {
                 name: i.name
             },
             create: {
-                name: e.name,
-                icon: e.icon,
-                type: e.type,
+
+                name: i.name,
+                icon: i.icon,
+                type: i.type,
             },
             update: {
-                name: e.name,
-                icon: e.icon,
-                type: e.type,
+                name: i.name,
+                icon: i.icon,
+                type: i.type,
             }
         })
         console.log(`Success create category ${category.name}`);
