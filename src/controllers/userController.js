@@ -26,12 +26,6 @@ module.exports = {
                 'string.min': 'Password tidak boleh kurang dari 8 karakter',
                 'any.required': 'Password wajib diisi',
             }),
-            gender: joi.string().valid('male', 'female').messages({
-                'string.base': 'Gender hanya bisa dimasukkan male / female',
-                'string.empty': 'Gender tidak boleh dikosongi',
-                'any.valid': 'Gender hanya bisa dimasukkan male / female',
-                'any.required': 'Gender wajib diisi',
-            }),
         }).unknown(true);
 
         try {
@@ -230,12 +224,6 @@ module.exports = {
                 'string.base': 'Nama hanya bisa dimasukkan text',
                 'string.empty': 'Nama tidak boleh dikosongi',
                 'any.required': 'Nama wajib diisi',
-            }),
-            gender: joi.string().valid('male', 'female').messages({
-                'string.base': 'Gender hanya bisa dimasukkan male / female',
-                'string.empty': 'Gender tidak boleh dikosongi',
-                'any.valid': 'Gender hanya bisa dimasukkan male / female',
-                'any.required': 'Gender wajib diisi',
             }),
         }).unknown(true);
 
