@@ -242,7 +242,7 @@ module.exports = {
                         }
                     });
 
-                    res.status(200).json({
+                    res.status(201).json({
                         message: 'success create data!',
                         data: newTransaction
                     });
