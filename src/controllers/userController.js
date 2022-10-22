@@ -289,12 +289,7 @@ module.exports = {
                 'string.min': 'Password baru tidak boleh kurang dari 8 karakter',
                 'any.required': 'Password baru wajib diisi',
             }),
-            new_password_confirm: joi.ref('new_password').messages({
-                'string.empty': 'Password baru konfirmasi tidak boleh dikosongi',
-                'string.min': 'Password baru konfirmasi tidak boleh kurang dari 8 karakter',
-                'any.required': 'Password baru konfirmasi wajib diisi',
-                'any.ref': 'Password baru konfirmasi tidak sesuai dengan password baru',
-            }),
+            new_password_confirm: joi.ref('new_password'),
         });
 
         try {
@@ -525,12 +520,7 @@ module.exports = {
                 'string.min': 'Password baru tidak boleh kurang dari 8 karakter',
                 'any.required': 'Password baru wajib diisi',
             }),
-            password_confirm: joi.ref('password').messages({
-                'string.empty': 'Password baru konfirmasi tidak boleh dikosongi',
-                'string.min': 'Password baru konfirmasi tidak boleh kurang dari 8 karakter',
-                'any.required': 'Password baru konfirmasi wajib diisi',
-                'any.ref': 'Password baru konfirmasi tidak sesuai dengan password baru',
-            }),
+            password_confirm: joi.ref('password'),
         });
 
         try {
