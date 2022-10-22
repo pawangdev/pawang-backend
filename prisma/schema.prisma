@@ -70,7 +70,7 @@ model users {
   gender         users_gender?
   image_profile  String?          @db.VarChar(255)
   google_id      String?          @unique @db.VarChar(255)
-  onesignal_id   String?          @unique @db.VarChar(255)
+  onesignal_id   String?          @db.VarChar(255)
   created_at     DateTime         @default(now())
   updated_at     DateTime         @updatedAt
   transactions   transactions[]

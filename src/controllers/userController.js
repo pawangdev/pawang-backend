@@ -49,7 +49,7 @@ module.exports = {
             }
 
             // Check Email Duplicated
-            const checkEmail = await prisma.users.findFirst({
+            const checkEmail = await prisma.users.findUnique({
                 where: {
                     email
                 }
@@ -84,7 +84,7 @@ module.exports = {
                         id: newUser.id
                     },
                     data: {
-                        onesignal_id: onesignal_id
+                        onesignal_id
                     }
                 });
 
@@ -140,11 +140,11 @@ module.exports = {
                 return;
             }
 
-            const user = await prisma.users.findFirst({
+            const user = await prisma.users.findUnique({
                 where: {
                     email
                 }
-            })
+            });
 
             if (user) {
                 try {
@@ -155,7 +155,7 @@ module.exports = {
                                 id: user.id
                             },
                             data: {
-                                onesignal_id: onesignal_id
+                                onesignal_id
                             }
                         });
 
