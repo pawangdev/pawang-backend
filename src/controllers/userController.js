@@ -49,7 +49,7 @@ module.exports = {
             }
 
             // Check Email Duplicated
-            const checkEmail = await prisma.users.findUnique({
+            const checkEmail = await prisma.users.findFirst({
                 where: {
                     email
                 }
@@ -140,7 +140,7 @@ module.exports = {
                 return;
             }
 
-            const user = await prisma.users.findUnique({
+            const user = await prisma.users.findFirst({
                 where: {
                     email
                 }
