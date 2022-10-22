@@ -77,8 +77,16 @@ module.exports = {
     },
     create: async (req, res) => {
         const createWalletSchema = joi.object({
-            name: joi.string().required(),
-            balance: joi.number().required(),
+            name: joi.string().required().messages({
+                'string.base': 'Nama hanya bisa dimasukkan text',
+                'string.empty': 'Nama tidak boleh dikosongi',
+                'any.required': 'Nama wajib diisi',
+            }),
+            balance: joi.number().required().messages({
+                'string.base': 'Nominal hanya bisa dimasukkan angka',
+                'string.empty': 'Nominal tidak boleh dikosongi',
+                'any.required': 'Nominal wajib diisi',
+            }),
         }).unknown(true);
 
         try {
@@ -88,9 +96,8 @@ module.exports = {
                 abortEarly: false,
             });
             if (error) {
-                let message = error.details[0].message.split('"');
-                message = message[1] + message[2];
-                res.status(422).json({ message: "format not valid", data: message });
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                 return;
             }
@@ -124,8 +131,16 @@ module.exports = {
     },
     update: async (req, res) => {
         const updateWalletSchema = joi.object({
-            name: joi.string().required(),
-            balance: joi.number().required(),
+            name: joi.string().required().messages({
+                'string.base': 'Nama hanya bisa dimasukkan text',
+                'string.empty': 'Nama tidak boleh dikosongi',
+                'any.required': 'Nama wajib diisi',
+            }),
+            balance: joi.number().required().messages({
+                'string.base': 'Nominal hanya bisa dimasukkan angka',
+                'string.empty': 'Nominal tidak boleh dikosongi',
+                'any.required': 'Nominal wajib diisi',
+            }),
         }).unknown(true);
 
         try {
@@ -136,9 +151,8 @@ module.exports = {
                 abortEarly: false,
             });
             if (error) {
-                let message = error.details[0].message.split('"');
-                message = message[1] + message[2];
-                res.status(422).json({ message: "format not valid", data: message });
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                 return;
             }

@@ -10,11 +10,28 @@ const prisma = new PrismaClient();
 module.exports = {
     register: async (req, res) => {
         const registerSchema = joi.object({
-            name: joi.string().required(),
-            email: joi.string().email().required(),
-            password: joi.string().min(8).required(),
-            phone: joi.string().required(),
-            gender: joi.string().valid('male', 'female').required(),
+            name: joi.string().required().messages({
+                'string.base': 'Nama hanya bisa dimasukkan text',
+                'string.empty': 'Nama tidak boleh dikosongi',
+                'any.required': 'Nama wajib diisi',
+            }),
+            email: joi.string().email().required().messages({
+                'string.base': 'Email hanya bisa dimasukkan email',
+                'string.email': 'Email hanya bisa dimasukkan email',
+                'string.empty': 'Email tidak boleh dikosongi',
+                'any.required': 'Email wajib diisi',
+            }),
+            password: joi.string().min(8).required().messages({
+                'string.empty': 'Password tidak boleh dikosongi',
+                'string.min': 'Password tidak boleh kurang dari 8 karakter',
+                'any.required': 'Password wajib diisi',
+            }),
+            gender: joi.string().valid('male', 'female').messages({
+                'string.base': 'Gender hanya bisa dimasukkan male / female',
+                'string.empty': 'Gender tidak boleh dikosongi',
+                'any.valid': 'Gender hanya bisa dimasukkan male / female',
+                'any.required': 'Gender wajib diisi',
+            }),
         }).unknown(true);
 
         try {
@@ -25,9 +42,8 @@ module.exports = {
             });
 
             if (error) {
-                let message = error.details[0].message.split('"');
-                message = message[1] + message[2];
-                res.status(422).json({ message: "format not valid", data: message });
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                 return;
             }
@@ -98,8 +114,16 @@ module.exports = {
     },
     login: async (req, res) => {
         const loginSchema = joi.object({
-            email: joi.string().email().required(),
-            password: joi.string().min(8).required(),
+            email: joi.string().email().required().messages({
+                'string.base': 'Email hanya bisa dimasukkan email',
+                'string.empty': 'Email tidak boleh dikosongi',
+                'any.required': 'Email wajib diisi',
+            }),
+            password: joi.string().min(8).required().messages({
+                'string.empty': 'Password tidak boleh dikosongi',
+                'string.min': 'Password tidak boleh kurang dari 8 karakter',
+                'any.required': 'Password wajib diisi',
+            }),
         }).unknown(true);
 
         try {
@@ -110,9 +134,8 @@ module.exports = {
             });
 
             if (error) {
-                let message = error.details[0].message.split('"');
-                message = message[1] + message[2];
-                res.status(422).json({ message: "format not valid", data: message });
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                 return;
             }
@@ -203,9 +226,17 @@ module.exports = {
     },
     changeProfile: async (req, res) => {
         const changeProfileSchema = joi.object({
-            name: joi.string().required(),
-            gender: joi.string().valid('male', 'female'),
-            phone: joi.string().required(),
+            name: joi.string().required().messages({
+                'string.base': 'Nama hanya bisa dimasukkan text',
+                'string.empty': 'Nama tidak boleh dikosongi',
+                'any.required': 'Nama wajib diisi',
+            }),
+            gender: joi.string().valid('male', 'female').messages({
+                'string.base': 'Gender hanya bisa dimasukkan male / female',
+                'string.empty': 'Gender tidak boleh dikosongi',
+                'any.valid': 'Gender hanya bisa dimasukkan male / female',
+                'any.required': 'Gender wajib diisi',
+            }),
         }).unknown(true);
 
         try {
@@ -217,9 +248,8 @@ module.exports = {
             });
 
             if (error) {
-                let message = error.details[0].message.split('"');
-                message = message[1] + message[2];
-                res.status(422).json({ message: "format not valid", data: message });
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                 return;
             }
@@ -249,9 +279,22 @@ module.exports = {
     },
     changePassword: async (req, res) => {
         const changePasswordSchema = joi.object({
-            old_password: joi.string().min(8).required(),
-            new_password: joi.string().min(8).required(),
-            new_password_confirm: joi.ref('new_password'),
+            old_password: joi.string().min(8).required().messages({
+                'string.empty': 'Password lama tidak boleh dikosongi',
+                'string.min': 'Password lama tidak boleh kurang dari 8 karakter',
+                'any.required': 'Password lama wajib diisi',
+            }),
+            new_password: joi.string().min(8).required().messages({
+                'string.empty': 'Password baru tidak boleh dikosongi',
+                'string.min': 'Password baru tidak boleh kurang dari 8 karakter',
+                'any.required': 'Password baru wajib diisi',
+            }),
+            new_password_confirm: joi.ref('new_password').messages({
+                'string.empty': 'Password baru konfirmasi tidak boleh dikosongi',
+                'string.min': 'Password baru konfirmasi tidak boleh kurang dari 8 karakter',
+                'any.required': 'Password baru konfirmasi wajib diisi',
+                'any.ref': 'Password baru konfirmasi tidak sesuai dengan password baru',
+            }),
         });
 
         try {
@@ -263,9 +306,8 @@ module.exports = {
             });
 
             if (error) {
-                let message = error.details[0].message.split('"');
-                message = message[1] + message[2];
-                res.status(422).json({ message: "format not valid", data: message });
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                 return;
             }
@@ -334,9 +376,8 @@ module.exports = {
             });
 
             if (error) {
-                let message = error.details[0].message.split('"');
-                message = message[1] + message[2];
-                res.status(422).json({ message: "format not valid", data: message });
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                 return;
             }
@@ -393,8 +434,16 @@ module.exports = {
     },
     verifyResetPasswordToken: async (req, res) => {
         const verifyResetPasswordTokenSchema = joi.object({
-            email: joi.string().email().required(),
-            token: joi.string().min(6).required(),
+            email: joi.string().email().required().messages({
+                'string.base': 'Email hanya bisa dimasukkan email',
+                'string.empty': 'Email tidak boleh dikosongi',
+                'any.required': 'Email wajib diisi',
+            }),
+            token: joi.string().min(6).required().messages({
+                'string.empty': 'Token tidak boleh dikosongi',
+                'string.min': 'Token tidak boleh kurang dari 6 karakter',
+                'any.required': 'Token wajib diisi',
+            }),
         });
 
         try {
@@ -404,9 +453,8 @@ module.exports = {
                 abortEarly: false,
             });
             if (error) {
-                let message = error.details[0].message.split('"');
-                message = message[1] + message[2];
-                res.status(422).json({ message: "format not valid", data: message });
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                 return;
             }
@@ -462,10 +510,27 @@ module.exports = {
     },
     resetPassword: async (req, res) => {
         const resetPasswordSchema = joi.object({
-            email: joi.string().email().required(),
-            token: joi.string().min(6).required(),
-            password: joi.string().min(8).required(),
-            password_confirm: joi.ref('password'),
+            email: joi.string().email().required().messages({
+                'string.base': 'Email hanya bisa dimasukkan email',
+                'string.empty': 'Email tidak boleh dikosongi',
+                'any.required': 'Email wajib diisi',
+            }),
+            token: joi.string().min(6).required().messages({
+                'string.empty': 'Token tidak boleh dikosongi',
+                'string.min': 'Token tidak boleh kurang dari 6 karakter',
+                'any.required': 'Token wajib diisi',
+            }),
+            password: joi.string().min(8).required().messages({
+                'string.empty': 'Password baru tidak boleh dikosongi',
+                'string.min': 'Password baru tidak boleh kurang dari 8 karakter',
+                'any.required': 'Password baru wajib diisi',
+            }),
+            password_confirm: joi.ref('password').messages({
+                'string.empty': 'Password baru konfirmasi tidak boleh dikosongi',
+                'string.min': 'Password baru konfirmasi tidak boleh kurang dari 8 karakter',
+                'any.required': 'Password baru konfirmasi wajib diisi',
+                'any.ref': 'Password baru konfirmasi tidak sesuai dengan password baru',
+            }),
         });
 
         try {
@@ -475,9 +540,8 @@ module.exports = {
                 abortEarly: false,
             });
             if (error) {
-                let message = error.details[0].message.split('"');
-                message = message[1] + message[2];
-                res.status(422).json({ message: "format not valid", data: message });
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                 return;
             }

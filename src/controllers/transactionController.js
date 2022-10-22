@@ -106,11 +106,31 @@ module.exports = {
     },
     create: async (req, res) => {
         const createTransactionSchema = joi.object({
-            amount: joi.number().required(),
-            category_id: joi.number().required(),
-            wallet_id: joi.number().required(),
-            subcategory_id: joi.number().allow(null),
-            date: joi.date().required(),
+            amount: joi.number().required().messages({
+                'string.base': 'Nominal hanya bisa dimasukkan angka',
+                'string.empty': 'Nominal tidak boleh dikosongi',
+                'any.required': 'Nominal wajib diisi',
+            }),
+            category_id: joi.number().required().messages({
+                'string.base': 'Kategori hanya bisa dimasukkan angka',
+                'string.empty': 'Kategori tidak boleh dikosongi',
+                'any.required': 'Kategori wajib diisi',
+            }),
+            wallet_id: joi.number().required().messages({
+                'string.base': 'Wallet hanya bisa dimasukkan angka',
+                'string.empty': 'Wallet tidak boleh dikosongi',
+                'any.required': 'Wallet wajib diisi',
+            }),
+            subcategory_id: joi.number().allow(null).messages({
+                'string.base': 'Sub Kategori hanya bisa dimasukkan angka',
+                'string.empty': 'Sub Kategori tidak boleh dikosongi',
+                'any.required': 'Sub Kategori wajib diisi',
+            }),
+            date: joi.date().required().messages({
+                'string.base': 'Tanggal hanya bisa dimasukkan tanggal',
+                'string.empty': 'Tanggal tidak boleh dikosongi',
+                'any.required': 'Tanggal wajib diisi',
+            }),
         }).unknown(true);
 
         try {
@@ -138,9 +158,8 @@ module.exports = {
                         abortEarly: false,
                     });
                     if (error) {
-                        let message = error.details[0].message.split('"');
-                        message = message[1] + message[2];
-                        res.status(422).json({ message: "format not valid", data: message });
+                        let message = error.details[0].message;
+                        res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                         return;
                     }
@@ -237,11 +256,31 @@ module.exports = {
     },
     update: async (req, res, next) => {
         const updateTransactionSchema = joi.object({
-            amount: joi.number().required(),
-            category_id: joi.number().required(),
-            wallet_id: joi.number().required(),
-            subcategory_id: joi.number().allow(null),
-            date: joi.date().required(),
+            amount: joi.number().required().messages({
+                'string.base': 'Nominal hanya bisa dimasukkan angka',
+                'string.empty': 'Nominal tidak boleh dikosongi',
+                'any.required': 'Nominal wajib diisi',
+            }),
+            category_id: joi.number().required().messages({
+                'string.base': 'Kategori hanya bisa dimasukkan angka',
+                'string.empty': 'Kategori tidak boleh dikosongi',
+                'any.required': 'Kategori wajib diisi',
+            }),
+            wallet_id: joi.number().required().messages({
+                'string.base': 'Wallet hanya bisa dimasukkan angka',
+                'string.empty': 'Wallet tidak boleh dikosongi',
+                'any.required': 'Wallet wajib diisi',
+            }),
+            subcategory_id: joi.number().allow(null).messages({
+                'string.base': 'Sub Kategori hanya bisa dimasukkan angka',
+                'string.empty': 'Sub Kategori tidak boleh dikosongi',
+                'any.required': 'Sub Kategori wajib diisi',
+            }),
+            date: joi.date().required().messages({
+                'string.base': 'Tanggal hanya bisa dimasukkan tanggal',
+                'string.empty': 'Tanggal tidak boleh dikosongi',
+                'any.required': 'Tanggal wajib diisi',
+            }),
         }).unknown(true);
 
         try {
@@ -271,9 +310,8 @@ module.exports = {
                         abortEarly: false,
                     });
                     if (error) {
-                        let message = error.details[0].message.split('"');
-                        message = message[1] + message[2];
-                        res.status(422).json({ message: "format not valid", data: message });
+                        let message = error.details[0].message;
+                        res.status(422).json({ message: "Format Tidak Valid", data: message });
 
                         return;
                     }

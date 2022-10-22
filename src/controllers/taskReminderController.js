@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 const schedule = require('node-schedule');
+const joi = require('joi');
 const { sendNotification } = require('../helpers/notification');
 const moment = require('moment-timezone');
 
@@ -50,6 +51,19 @@ module.exports = {
         }
     },
     create: async (req, res) => {
+        const taskReminderSchema = joi.object({
+            name: joi.string().required().messages({
+                'string.base': 'Nama hanya bisa dimasukkan text',
+                'string.empty': 'Nama tidak boleh dikosongi',
+                'any.required': 'Nama wajib diisi',
+            }),
+            date: joi.date().required().messages({
+                'string.base': 'Tanggal hanya bisa dimasukkan tanggal',
+                'string.empty': 'Tanggal tidak boleh dikosongi',
+                'any.required': 'Tanggal wajib diisi',
+            }),
+        }).unknown(true);
+
         try {
             const {
                 name,
@@ -57,6 +71,17 @@ module.exports = {
                 date,
                 is_active,
             } = req.body;
+
+            const { error, value } = taskReminderSchema.validate(req.body, {
+                abortEarly: false,
+            });
+
+            if (error) {
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
+
+                return;
+            }
 
             const newReminder = await prisma.task_reminders.create({
                 data: {
@@ -77,6 +102,19 @@ module.exports = {
         }
     },
     update: async (req, res) => {
+        const taskReminderSchema = joi.object({
+            name: joi.string().required().messages({
+                'string.base': 'Nama hanya bisa dimasukkan text',
+                'string.empty': 'Nama tidak boleh dikosongi',
+                'any.required': 'Nama wajib diisi',
+            }),
+            date: joi.date().required().messages({
+                'string.base': 'Tanggal hanya bisa dimasukkan tanggal',
+                'string.empty': 'Tanggal tidak boleh dikosongi',
+                'any.required': 'Tanggal wajib diisi',
+            }),
+        }).unknown(true);
+
         try {
             const { id } = req.params;
             const {
@@ -85,6 +123,17 @@ module.exports = {
                 date,
                 is_active,
             } = req.body;
+
+            const { error, value } = taskReminderSchema.validate(req.body, {
+                abortEarly: false,
+            });
+
+            if (error) {
+                let message = error.details[0].message;
+                res.status(422).json({ message: "Format Tidak Valid", data: message });
+
+                return;
+            }
 
             const checkReminder = await prisma.task_reminders.findUnique({
                 where: {
