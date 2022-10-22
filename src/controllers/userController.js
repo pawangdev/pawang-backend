@@ -270,7 +270,7 @@ module.exports = {
             res.status(200).json({
                 message: 'berhasil memperbarui profile',
                 data: {
-                    updateUser,
+                    user: updateUser,
                 }
             });
         } catch (error) {
