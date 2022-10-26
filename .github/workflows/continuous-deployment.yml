@@ -60,11 +60,3 @@ jobs:
           docker image rm -f ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
           docker run -d -p 5000:5000 --restart always -v /home/pawang/pawang-backend/public:/usr/src/app/public --name pawang-backend ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
-          
-    - name: send telegram message on push
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: |
-          messages : ${{ github.action }}
