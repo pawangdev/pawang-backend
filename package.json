@@ -12,9 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "@onesignal/node-onesignal": "^1.0.0-beta4",
-    "@prisma/client": "^4.4.0",
+    "@prisma/client": "^4.5.0",
     "and": "^0.0.3",
     "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^16.0.2",
     "express": "^4.18.1",
@@ -29,7 +30,7 @@
     "swagger-ui-express": "^4.5.0"
   },
   "devDependencies": {
-    "prisma": "^4.4.0"
+    "prisma": "^4.5.0"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

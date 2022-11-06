@@ -3,8 +3,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const joi = require('joi');
-const emailService = require('../helpers/mail');
+const eventsEmitter = require('../helpers/event');
 const { addPlayer } = require('../helpers/notification');
+
+
 const prisma = new PrismaClient();
 
 module.exports = {
@@ -399,13 +401,15 @@ module.exports = {
         }
       });
 
-      await emailService.sendMail({
+      const data = {
         from: 'Pawang <teampawang.dev@gmail.com>',
         to: email,
         subject: "Kode Lupa Kata Sandi",
         text: `Gunakan kode ini untuk mengatur ulang kata sandi akun Anda: ${resetToken}. Kode hanya berlaku 10 menit.`,
         html: `<p>Gunakan kode ini untuk mengatur ulang kata sandi akun Anda: <strong>${resetToken}</strong>. Kode hanya berlaku 10 menit.</p>`,
-      });
+      }
+
+      eventsEmitter.emit('sendEmail', data);
 
       res.status(200).json({
         message: 'berhasil mengirim token untuk reset password, silahkan cek email anda',

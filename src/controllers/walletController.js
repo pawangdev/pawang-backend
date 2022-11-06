@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const joi = require('joi');
+const eventsEmitter = require('../helpers/event');
 
 const prisma = new PrismaClient();
 
@@ -12,15 +13,35 @@ module.exports = {
         },
         include: {
           transactions: {
-            include: {
-              category: {},
-              subcategory: {},
-            },
             where: {
               user_id: req.user.id
             },
+            orderBy: {
+              date: 'desc'
+            },
+            include: {
+              wallet: {},
+              category: {},
+              subcategory: {},
+            }
           }
         },
+      });
+
+      wallets.forEach(wallet => {
+        let totalIncome = 0;
+        let totalOutcome = 0;
+
+        wallet.transactions.forEach(transaction => {
+          if (transaction.type === 'income') {
+            totalIncome += transaction.amount;
+          } else {
+            totalOutcome += transaction.amount;
+          }
+        });
+
+        wallet['total_income'] = totalIncome;
+        wallet['total_outcome'] = totalOutcome;
       });
 
       res.status(200).json({
@@ -41,13 +62,17 @@ module.exports = {
         },
         include: {
           transactions: {
-            include: {
-              category: {},
-              subcategory: {},
-            },
             where: {
               user_id: req.user.id
             },
+            orderBy: {
+              date: 'desc'
+            },
+            include: {
+              wallet: {},
+              category: {},
+              subcategory: {},
+            }
           }
         }
       });
@@ -75,6 +100,18 @@ module.exports = {
           id: Number(id),
         }
       });
+
+      wallet.transactions.forEach(transaction => {
+        if (transaction.type === 'income') {
+          totalIncome += transaction.amount;
+        } else {
+          totalOutcome += transaction.amount;
+        }
+      });
+
+      wallet['total_income'] = totalIncome;
+      wallet['total_outcome'] = totalOutcome;
+
       res.status(200).json({
         message: 'success retreived data!',
         data: wallet
@@ -241,6 +278,9 @@ module.exports = {
       const checkWallet = await prisma.wallets.findUnique({
         where: {
           id: Number(id),
+        },
+        include: {
+          transactions: {}
         }
       });
 
@@ -261,6 +301,12 @@ module.exports = {
           return;
         }
       }
+
+      checkWallet.transactions.forEach((transaction) => {
+        if (transaction.image_url) {
+          eventsEmitter.emit('deleteFile', transaction.image_url);
+        }
+      });
 
       await prisma.wallets.delete({
         where: {
