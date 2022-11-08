@@ -44,7 +44,7 @@ const sendNotification = async ({ title, subtitle, playerId }) => {
   notification.app_id = process.env.ONESIGNAL_APP_ID;
 
   // Icon App
-  notification.small_icon = 'launcher_icon';
+  notification.small_icon = 'ic_launcher';
 
   // Title
   notification.headings = {
