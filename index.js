@@ -2,11 +2,10 @@ const express = require("express")
 const dotenv = require("dotenv")
 const cors = require("cors")
 const compression = require("compression");
+
 dotenv.config();
 
 const { scheduler } = require('./src/controllers/taskReminderController');
-const emailService = require("./src/helpers/mail");
-
 
 const routes = require("./src/routes/index");
 
@@ -18,7 +17,6 @@ app.use(cors({}));
 
 // Compress all HTTP responsess
 app.use(compression());
-
 
 // Routing
 app.get('/', (req, res) => {

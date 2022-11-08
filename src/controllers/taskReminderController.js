@@ -228,7 +228,7 @@ module.exports = {
       });
 
       reminders.forEach(async (item) => {
-        if (moment().format('HH:mm') === moment(item.date).format("HH:mm")) {
+        if (moment().format() === moment(item.date).format()) {
           await sendNotification({ title: "Pengingat", subtitle: `Jangan Lupa ${item.name}, ${moment().format('LL')}`, playerId: item.user.onesignal_id });
           const newDate = new Date(item.date);
 
@@ -263,7 +263,7 @@ module.exports = {
             });
           }
         }
-      })
+      });
     });
   }
 }
