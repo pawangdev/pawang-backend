@@ -232,16 +232,18 @@ module.exports = {
           await sendNotification({ title: "Pengingat", subtitle: `Jangan Lupa ${item.name}, ${moment().format('LL')}`, playerId: item.user.onesignal_id });
           const newDate = new Date(item.date);
 
-          if (item.type === 'daily') {
+          if (item.type == 'daily') {
             newDate.setDate(newDate.getDate() + 1);
-          } else if (item.type === 'weekly') {
+          } else if (item.type == 'weekly') {
             newDate.setDate(newDate.getDate() + 7);
-          } else if (item.type === 'monthly') {
+          } else if (item.type == 'monthly') {
             newDate.setMonth(newDate.getMonth() + 1);
-          } else if (item.type === 'yearly') {
+          } else if (item.type == 'yearly') {
             newDate.setFullYear(newDate.getFullYear() + 1);
-          } else if (item.type === 'once') {
-            await prisma.task_reminders.delete({
+          }
+
+          if (item.type == 'once') {
+            await prisma.task_reminders.update({
               where: {
                 id: item.id
               },
@@ -249,9 +251,7 @@ module.exports = {
                 is_active: false
               }
             });
-          }
-
-          if (item.type !== 'once') {
+          } else {
             await prisma.task_reminders.update({
               where: {
                 id: item.id
