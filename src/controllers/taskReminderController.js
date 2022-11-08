@@ -240,8 +240,8 @@ module.exports = {
             newDate.setMonth(newDate.getMonth() + 1);
           } else if (item.type === 'yearly') {
             newDate.setFullYear(newDate.getFullYear() + 1);
-          } else {
-            await prisma.task_reminders.update({
+          } else if (item.type === 'once') {
+            await prisma.task_reminders.delete({
               where: {
                 id: item.id
               },
@@ -251,15 +251,17 @@ module.exports = {
             });
           }
 
-          await prisma.task_reminders.update({
-            where: {
-              id: item.id
-            },
-            data: {
-              is_active: true,
-              date: newDate,
-            }
-          });
+          if (item.type !== 'once') {
+            await prisma.task_reminders.update({
+              where: {
+                id: item.id
+              },
+              data: {
+                is_active: true,
+                date: newDate,
+              }
+            });
+          }
         }
       })
     });
