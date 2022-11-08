@@ -229,7 +229,7 @@ module.exports = {
 
       reminders.forEach(async (item) => {
         if (moment().format('HH:mm') === moment(item.date).format("HH:mm")) {
-          await sendNotification({ title: item.name, subtitle: moment().format('LL'), playerId: item.user.onesignal_id });
+          await sendNotification({ title: "Pengingat", subtitle: `Jangan Lupa ${item.name}, ${moment().format('LL')}`, playerId: item.user.onesignal_id });
           const newDate = new Date(item.date);
 
           if (item.type === 'daily') {
