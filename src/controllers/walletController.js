@@ -1,6 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
-const joi = require('joi');
-const eventsEmitter = require('../helpers/event');
+const { PrismaClient } = require("@prisma/client");
+const joi = require("joi");
+const eventsEmitter = require("../helpers/event");
 
 const prisma = new PrismaClient();
 
@@ -9,43 +9,43 @@ module.exports = {
     try {
       const wallets = await prisma.wallets.findMany({
         where: {
-          user_id: req.user.id
+          user_id: req.user.id,
         },
         include: {
           transactions: {
             where: {
-              user_id: req.user.id
+              user_id: req.user.id,
             },
             orderBy: {
-              date: 'desc'
+              date: "desc",
             },
             include: {
               wallet: {},
               category: {},
               subcategory: {},
-            }
-          }
+            },
+          },
         },
       });
 
-      wallets.forEach(wallet => {
+      wallets.forEach((wallet) => {
         let totalIncome = 0;
         let totalOutcome = 0;
 
-        wallet.transactions.forEach(transaction => {
-          if (transaction.type === 'income') {
+        wallet.transactions.forEach((transaction) => {
+          if (transaction.type === "income") {
             totalIncome += transaction.amount;
           } else {
             totalOutcome += transaction.amount;
           }
         });
 
-        wallet['total_income'] = totalIncome;
-        wallet['total_outcome'] = totalOutcome;
+        wallet["total_income"] = totalIncome;
+        wallet["total_outcome"] = totalOutcome;
       });
 
       res.status(200).json({
-        message: 'success retreived data!',
+        message: "success retreived data!",
         data: wallets,
       });
     } catch (error) {
@@ -56,83 +56,73 @@ module.exports = {
     try {
       const { id } = req.params;
 
-      const checkWallet = await prisma.wallets.findUnique({
+      const checkWallet = await prisma.wallets.findFirst({
         where: {
-          id: Number(id),
+          AND: {
+            id: Number(id),
+            user_id: req.user.id,
+          },
         },
         include: {
           transactions: {
             where: {
-              user_id: req.user.id
+              user_id: req.user.id,
             },
             orderBy: {
-              date: 'desc'
+              date: "desc",
             },
             include: {
               wallet: {},
               category: {},
               subcategory: {},
-            }
-          }
-        }
+            },
+          },
+        },
       });
 
       if (!checkWallet) {
         res.status(404).json({
-          message: 'failed retreived wallet!',
-          data: null
+          message: "failed retreived wallet!",
+          data: null,
         });
 
         return;
-      } else {
-        if (checkWallet.user_id != req.user.id) {
-          res.status(404).json({
-            message: 'failed retreived wallet!',
-            data: null
-          });
-
-          return;
-        }
       }
 
-      const wallet = await prisma.wallets.findUnique({
-        where: {
-          id: Number(id),
-        }
-      });
-
-      wallet.transactions.forEach(transaction => {
-        if (transaction.type === 'income') {
+      checkWallet.transactions.forEach((transaction) => {
+        if (transaction.type === "income") {
           totalIncome += transaction.amount;
         } else {
           totalOutcome += transaction.amount;
         }
       });
 
-      wallet['total_income'] = totalIncome;
-      wallet['total_outcome'] = totalOutcome;
+      checkWallet["total_income"] = totalIncome;
+      checkWallet["total_outcome"] = totalOutcome;
 
       res.status(200).json({
-        message: 'success retreived data!',
-        data: wallet
+        message: "success retreived data!",
+        data: checkWallet,
       });
     } catch (error) {
       res.status(500).send(error.message);
     }
   },
   create: async (req, res) => {
-    const createWalletSchema = joi.object({
-      name: joi.string().required().messages({
-        'string.base': 'Nama hanya bisa dimasukkan text',
-        'string.empty': 'Nama tidak boleh dikosongi',
-        'any.required': 'Nama wajib diisi',
-      }),
-      balance: joi.number().required().messages({
-        'string.base': 'Nominal hanya bisa dimasukkan angka',
-        'string.empty': 'Nominal tidak boleh dikosongi',
-        'any.required': 'Nominal wajib diisi',
-      }),
-    }).unknown(true);
+    const createWalletSchema = joi
+      .object({
+        name: joi.string().required().messages({
+          "string.base": "Nama hanya bisa dimasukkan text",
+          "string.empty": "Nama tidak boleh dikosongi",
+          "any.required": "Nama wajib diisi",
+        }),
+        balance: joi.number().required().messages({
+          "string.base": "Nominal hanya bisa dimasukkan angka",
+          "string.empty": "Nominal tidak boleh dikosongi",
+          "any.required": "Nominal wajib diisi",
+        }),
+      })
+      .unknown(true);
 
     try {
       const { name, balance = 0 } = req.body;
@@ -149,8 +139,10 @@ module.exports = {
 
       const newWallet = await prisma.wallets.create({
         data: {
-          name, balance: Number(balance), user_id: req.user.id
-        }
+          name,
+          balance: Number(balance),
+          user_id: req.user.id,
+        },
       });
 
       if (Number(balance) != 0) {
@@ -162,12 +154,12 @@ module.exports = {
             wallet_id: newWallet.id,
             date: new Date().toISOString(),
             amount: Number(balance),
-          }
+          },
         });
       }
 
       res.status(201).json({
-        message: 'success create wallet!',
+        message: "success create wallet!",
         data: newWallet,
       });
     } catch (error) {
@@ -175,18 +167,20 @@ module.exports = {
     }
   },
   update: async (req, res) => {
-    const updateWalletSchema = joi.object({
-      name: joi.string().required().messages({
-        'string.base': 'Nama hanya bisa dimasukkan text',
-        'string.empty': 'Nama tidak boleh dikosongi',
-        'any.required': 'Nama wajib diisi',
-      }),
-      balance: joi.number().required().messages({
-        'string.base': 'Nominal hanya bisa dimasukkan angka',
-        'string.empty': 'Nominal tidak boleh dikosongi',
-        'any.required': 'Nominal wajib diisi',
-      }),
-    }).unknown(true);
+    const updateWalletSchema = joi
+      .object({
+        name: joi.string().required().messages({
+          "string.base": "Nama hanya bisa dimasukkan text",
+          "string.empty": "Nama tidak boleh dikosongi",
+          "any.required": "Nama wajib diisi",
+        }),
+        balance: joi.number().required().messages({
+          "string.base": "Nominal hanya bisa dimasukkan angka",
+          "string.empty": "Nominal tidak boleh dikosongi",
+          "any.required": "Nominal wajib diisi",
+        }),
+      })
+      .unknown(true);
 
     try {
       const { id } = req.params;
@@ -205,28 +199,31 @@ module.exports = {
       const checkWallet = await prisma.wallets.findUnique({
         where: {
           id: Number(id),
-        }
+        },
       });
 
       if (!checkWallet) {
         res.status(404).json({
-          message: 'failed retreived data!',
-          data: null
+          message: "failed retreived data!",
+          data: null,
         });
 
         return;
       } else {
         if (checkWallet.user_id != req.user.id) {
           res.status(404).json({
-            message: 'failed retreived data!',
-            data: null
+            message: "failed retreived data!",
+            data: null,
           });
 
           return;
         }
       }
 
-      if (Number(balance) != Number(checkWallet.balance) && Number(balance) != 0) {
+      if (
+        Number(balance) != Number(checkWallet.balance) &&
+        Number(balance) != 0
+      ) {
         if (checkWallet.balance < Number(balance)) {
           await prisma.transactions.create({
             data: {
@@ -236,7 +233,7 @@ module.exports = {
               wallet_id: checkWallet.id,
               date: new Date().toISOString(),
               amount: Number(balance) - checkWallet.balance,
-            }
+            },
           });
         } else {
           await prisma.transactions.create({
@@ -247,24 +244,23 @@ module.exports = {
               wallet_id: checkWallet.id,
               date: new Date().toISOString(),
               amount: checkWallet.balance - Number(balance),
-            }
+            },
           });
         }
       }
-
-
 
       const updateWallet = await prisma.wallets.update({
         where: {
           id: Number(id),
         },
         data: {
-          name, balance: Number(balance),
-        }
+          name,
+          balance: Number(balance),
+        },
       });
 
       res.status(200).json({
-        message: 'success update wallet!',
+        message: "success update wallet!",
         data: updateWallet,
       });
     } catch (error) {
@@ -280,22 +276,22 @@ module.exports = {
           id: Number(id),
         },
         include: {
-          transactions: {}
-        }
+          transactions: {},
+        },
       });
 
       if (!checkWallet) {
         res.status(404).json({
-          message: 'failed retreived wallet!',
-          data: null
+          message: "failed retreived wallet!",
+          data: null,
         });
 
         return;
       } else {
         if (checkWallet.user_id != req.user.id) {
           res.status(404).json({
-            message: 'failed retreived wallet!',
-            data: null
+            message: "failed retreived wallet!",
+            data: null,
           });
 
           return;
@@ -304,22 +300,22 @@ module.exports = {
 
       checkWallet.transactions.forEach((transaction) => {
         if (transaction.image_url) {
-          eventsEmitter.emit('deleteFile', transaction.image_url);
+          eventsEmitter.emit("deleteFile", transaction.image_url);
         }
       });
 
       await prisma.wallets.delete({
         where: {
           id: Number(id),
-        }
+        },
       });
 
       res.status(200).json({
-        message: 'success delete wallet!',
-        data: null
+        message: "success delete wallet!",
+        data: null,
       });
     } catch (error) {
       res.status(500).send(error.message);
     }
   },
-}
+};
