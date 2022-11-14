@@ -89,6 +89,9 @@ module.exports = {
         return;
       }
 
+      let totalIncome = 0;
+      let totalOutcome = 0;
+
       checkWallet.transactions.forEach((transaction) => {
         if (transaction.type === "income") {
           totalIncome += transaction.amount;
