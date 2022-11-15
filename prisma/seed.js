@@ -77,7 +77,7 @@ const categoryData = [
 
 const app_version = {
   version: "4.1.0",
-  force_update: false,
+  is_force: false,
 };
 
 const main = async () => {
@@ -106,7 +106,7 @@ const main = async () => {
     const versioning = await prisma.app_versioning.create({
       data: {
         version: app_version.version,
-        force_update: app_version.force_update,
+        is_force: app_version.force_update,
       },
     });
     console.log(`Success create app versioning ${versioning.version}`);
