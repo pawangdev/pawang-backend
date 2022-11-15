@@ -1,5 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const joi = require('joi');
+const { PrismaClient } = require("@prisma/client");
+const joi = require("joi");
 
 const prisma = new PrismaClient();
 
@@ -25,18 +25,22 @@ module.exports = {
           },
         },
         where: {
-          type: req.query.type
-        }
+          type: req.query.type,
+        },
       });
     }
 
     res.status(200).json({
-      message: 'success retreived data!',
-      data: categories
+      status: true,
+      message: "SUCCESS_GET_DATA",
+      data: categories,
     });
     try {
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+      });
     }
   },
   show: async (req, res) => {
@@ -54,142 +58,137 @@ module.exports = {
         },
       });
 
+      if (!category) {
+        throw { status: 404, message: "DATA_NOT_FOUND" };
+      }
+
       res.status(200).json({
-        message: 'success retreived data!',
-        data: category
+        status: true,
+        message: "SUCCESS_GET_DATA",
+        data: category,
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+      });
     }
   },
   create: async (req, res) => {
     const createSubCategorySchema = joi.object({
       name: joi.string().required().messages({
-        'string.base': 'Nama hanya bisa dimasukkan text',
-        'string.empty': 'Nama tidak boleh dikosongi',
-        'any.required': 'Nama wajib diisi',
+        "string.base": "Nama hanya bisa dimasukkan text",
+        "string.empty": "Nama tidak boleh dikosongi",
+        "any.required": "Nama wajib diisi",
       }),
     });
 
     try {
       const { id } = req.params;
 
-      const {
-        name,
-      } = req.body;
+      const { name } = req.body;
 
       const { error, value } = createSubCategorySchema.validate(req.body, {
         abortEarly: false,
       });
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
-      const category = await prisma.categories.findUnique({ where: { id: Number(id) } });
+      const category = await prisma.categories.findUnique({
+        where: { id: Number(id) },
+      });
       if (!category) {
-        res.status(404).json({
-          message: 'failed retreived data!',
-          data: null
-        });
+        throw { status: 404, message: "DATA_NOT_FOUND" };
       }
 
       const newSubCategory = await prisma.sub_categories.create({
         data: {
-          name, type: category.type, category_id: category.id, user_id: req.user.id
-        }
+          name,
+          type: category.type,
+          category_id: category.id,
+          user_id: req.user.id,
+        },
       });
 
       res.status(201).json({
-        message: 'success create data!',
-        data: newSubCategory
-      })
+        status: true,
+        message: "SUCCESS_CREATE_DATA",
+        data: newSubCategory,
+      });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+      });
     }
   },
   update: async (req, res) => {
     const updateSubCategorySchema = joi.object({
       name: joi.string().required().messages({
-        'string.base': 'Nama hanya bisa dimasukkan text',
-        'string.empty': 'Nama tidak boleh dikosongi',
-        'any.required': 'Nama wajib diisi',
+        "string.base": "Nama hanya bisa dimasukkan text",
+        "string.empty": "Nama tidak boleh dikosongi",
+        "any.required": "Nama wajib diisi",
       }),
     });
 
     try {
       const { id, subcategoryId } = req.params;
-      const {
-        name,
-      } = req.body;
+      const { name } = req.body;
 
       const { error, value } = updateSubCategorySchema.validate(req.body, {
         abortEarly: false,
       });
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
-      const category = await prisma.categories.findUnique({
+      const category = await prisma.categories.findFirst({
         where: {
-          id: Number(id)
-        }
+          id: Number(id),
+        },
       });
 
       if (!category) {
-        res.status(404).json({
-          message: 'failed retreived data!',
-          data: null
-        });
-
-        return;
+        throw { status: 404, message: "DATA_NOT_FOUND" };
       }
 
-      const subCategory = await prisma.sub_categories.findUnique({
+      const subCategory = await prisma.sub_categories.findFirst({
         where: {
-          id: Number(subcategoryId)
-        }
+          AND: {
+            id: Number(subcategoryId),
+            category_id: Number(id),
+            user_id: req.user.id,
+          },
+        },
       });
 
       if (!subCategory) {
-        res.status(404).json({
-          message: 'failed retreived data!',
-          data: null
-        });
-
-        return;
-      } else {
-        if (subCategory.user_id != req.user.id) {
-          res.status(404).json({
-            message: 'failed retreived data!',
-            data: null
-          });
-
-          return;
-        }
+        throw { status: 404, message: "DATA_NOT_FOUND" };
       }
 
       const updateSubCategory = await prisma.sub_categories.update({
         where: {
-          id: Number(subcategoryId)
+          id: Number(subcategoryId),
         },
         data: {
-          name, type: category.type
-        }
-      })
+          name,
+          type: category.type,
+        },
+      });
 
       res.status(200).json({
-        message: 'success update data!',
-        data: updateSubCategory
-      })
-
+        status: true,
+        message: "SUCCESS_UPDATE_DATA",
+        data: updateSubCategory,
+      });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+      });
     }
   },
   destroy: async (req, res) => {
@@ -198,55 +197,44 @@ module.exports = {
 
       const category = await prisma.categories.findUnique({
         where: {
-          id: Number(id)
-        }
+          id: Number(id),
+        },
       });
 
       if (!category) {
-        res.status(404).json({
-          message: 'failed retreived data!',
-          data: null
-        });
-
-        return;
+        throw { status: 404, message: "DATA_NOT_FOUND" };
       }
 
-      const subCategory = await prisma.sub_categories.findUnique({
+      const subCategory = await prisma.sub_categories.findFirst({
         where: {
-          id: Number(subcategoryId)
-        }
+          AND: {
+            id: Number(subcategoryId),
+            category_id: Number(id),
+            user_id: req.user.id,
+          },
+        },
       });
 
       if (!subCategory) {
-        res.status(404).json({
-          message: 'failed retreived data!',
-          data: null
-        });
-
-        return;
-      } else {
-        if (subCategory.user_id != req.user.id) {
-          res.status(404).json({
-            message: 'failed retreived data!',
-            data: null
-          });
-
-          return;
-        }
+        throw { status: 404, message: "DATA_NOT_FOUND" };
       }
 
       await prisma.sub_categories.delete({
         where: {
-          id: Number(subcategoryId)
+          id: Number(subcategoryId),
         },
       });
 
       res.status(200).json({
-        message: 'success delete data!',
-        data: null
-      })
+        status: true,
+        message: "SUCCESS_DELETE_DATA",
+        data: null,
+      });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+      });
     }
   },
-}
+};
