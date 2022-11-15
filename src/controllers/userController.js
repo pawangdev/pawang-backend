@@ -665,7 +665,10 @@ module.exports = {
 
       const checkOneSignal = await prisma.users_onesignals.findMany({
         where: {
-          onesignal_id,
+          AND: {
+            onesignal_id,
+            user_id: req.user.id,
+          },
         },
       });
 
