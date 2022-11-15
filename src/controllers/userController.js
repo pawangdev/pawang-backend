@@ -1,34 +1,35 @@
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const joi = require('joi');
-const eventsEmitter = require('../helpers/event');
-const { addPlayer } = require('../helpers/notification');
-
+const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const joi = require("joi");
+const eventsEmitter = require("../helpers/event");
+const { addPlayer } = require("../helpers/notification");
 
 const prisma = new PrismaClient();
 
 module.exports = {
   register: async (req, res) => {
-    const registerSchema = joi.object({
-      name: joi.string().required().messages({
-        'string.base': 'Nama hanya bisa dimasukkan text',
-        'string.empty': 'Nama tidak boleh dikosongi',
-        'any.required': 'Nama wajib diisi',
-      }),
-      email: joi.string().email().required().messages({
-        'string.base': 'Email hanya bisa dimasukkan email',
-        'string.email': 'Email hanya bisa dimasukkan email',
-        'string.empty': 'Email tidak boleh dikosongi',
-        'any.required': 'Email wajib diisi',
-      }),
-      password: joi.string().min(8).required().messages({
-        'string.empty': 'Password tidak boleh dikosongi',
-        'string.min': 'Password tidak boleh kurang dari 8 karakter',
-        'any.required': 'Password wajib diisi',
-      }),
-    }).unknown(true);
+    const registerSchema = joi
+      .object({
+        name: joi.string().required().messages({
+          "string.base": "Nama hanya bisa dimasukkan text",
+          "string.empty": "Nama tidak boleh dikosongi",
+          "any.required": "Nama wajib diisi",
+        }),
+        email: joi.string().email().required().messages({
+          "string.base": "Email hanya bisa dimasukkan email",
+          "string.email": "Email hanya bisa dimasukkan email",
+          "string.empty": "Email tidak boleh dikosongi",
+          "any.required": "Email wajib diisi",
+        }),
+        password: joi.string().min(8).required().messages({
+          "string.empty": "Password tidak boleh dikosongi",
+          "string.min": "Password tidak boleh kurang dari 8 karakter",
+          "any.required": "Password wajib diisi",
+        }),
+      })
+      .unknown(true);
 
     try {
       const { name, email, password, gender, phone, onesignal_id } = req.body;
@@ -39,88 +40,84 @@ module.exports = {
 
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
       // Check Email Duplicated
       const checkEmail = await prisma.users.findUnique({
         where: {
-          email
-        }
+          email,
+        },
       });
 
       if (checkEmail) {
-        res.status(422).json({
-          message: 'Email telah terdaftar',
-          data: null
-        });
-
-        return;
+        throw { status: 422, message: "EMAIL_HAS_REGISTERED", data: null };
       }
-
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await prisma.users.create({
         data: {
-          name, email, password: hashedPassword, gender, phone, onesignal_id, wallets: {
+          name,
+          email,
+          password: hashedPassword,
+          gender,
+          phone,
+          wallets: {
             create: {
               name: "Dompet",
               balance: 0,
-            }
-          }
+            },
+          },
+          users_onesignals: {
+            create: {
+              onesignal_id,
+            },
+          },
         },
       });
 
-      if (newUser) {
-        // Onesignal Update
-        await prisma.users.update({
-          where: {
-            id: newUser.id
-          },
-          data: {
-            onesignal_id
-          }
-        });
+      // Add Player OneSignal
+      await addPlayer({ onesignal_id });
 
-        // Add Player OneSignal
-        await addPlayer({ onesignal_id });
+      delete newUser.password;
+      delete newUser.google_id;
+      delete newUser.onesignal_id;
 
+      const payload = { id: newUser.id };
+      const accessToken = jwt.sign(payload, process.env.TOKEN_SECRET_KEY);
+      res.status(201).json({
+        status: true,
+        message: "SUCCESS_CREATE_USER",
+        data: {
+          user: newUser,
+          access_token: accessToken,
+        },
+      });
 
-        delete newUser.password;
-        delete newUser.google_id;
-        delete newUser.onesignal_id;
-
-        const payload = { id: newUser.id };
-        const accessToken = jwt.sign(payload, process.env.TOKEN_SECRET_KEY)
-        res.status(201).json({
-          message: "success created user!",
-          data: {
-            user: newUser,
-            access_token: accessToken
-          }
-        })
-
-        return;
-      }
+      return;
     } catch (error) {
-      res.status(500).send(error)
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   login: async (req, res) => {
-    const loginSchema = joi.object({
-      email: joi.string().email().required().messages({
-        'string.base': 'Email hanya bisa dimasukkan email',
-        'string.empty': 'Email tidak boleh dikosongi',
-        'any.required': 'Email wajib diisi',
-      }),
-      password: joi.string().min(8).required().messages({
-        'string.empty': 'Password tidak boleh dikosongi',
-        'string.min': 'Password tidak boleh kurang dari 8 karakter',
-        'any.required': 'Password wajib diisi',
-      }),
-    }).unknown(true);
+    const loginSchema = joi
+      .object({
+        email: joi.string().email().required().messages({
+          "string.base": "Email hanya bisa dimasukkan email",
+          "string.empty": "Email tidak boleh dikosongi",
+          "any.required": "Email wajib diisi",
+        }),
+        password: joi.string().min(8).required().messages({
+          "string.empty": "Password tidak boleh dikosongi",
+          "string.min": "Password tidak boleh kurang dari 8 karakter",
+          "any.required": "Password wajib diisi",
+        }),
+      })
+      .unknown(true);
 
     try {
       const { email, password, onesignal_id } = req.body;
@@ -131,15 +128,13 @@ module.exports = {
 
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
       const user = await prisma.users.findUnique({
         where: {
-          email
-        }
+          email,
+        },
       });
 
       if (user) {
@@ -148,11 +143,15 @@ module.exports = {
             // Onesignal Update
             await prisma.users.update({
               where: {
-                id: user.id
+                id: user.id,
               },
               data: {
-                onesignal_id
-              }
+                users_onesignals: {
+                  create: {
+                    onesignal_id,
+                  },
+                },
+              },
             });
 
             // Add Player OneSignal
@@ -165,35 +164,33 @@ module.exports = {
             const payload = { id: user.id };
             const accessToken = jwt.sign(payload, process.env.TOKEN_SECRET_KEY);
             res.status(200).json({
-              message: 'success login user!',
+              status: true,
+              message: "SUCCESS_LOGIN",
               data: {
                 user,
-                access_token: accessToken
-              }
+                access_token: accessToken,
+              },
             });
 
             return;
           } else {
-            res.status(401).json({
-              message: "Password invalid!",
-              data: null,
-            });
-
-            return;
+            throw { status: 401, message: "WRONG_PASSWORD", data: null };
           }
         } catch (error) {
-          res.status(500).send(error.message);
+          return res.status(error.status || 500).json({
+            status: false,
+            message: error.message || "INTERNAL_SERVER_ERROR",
+          });
         }
       } else {
-        res.status(404).json({
-          message: 'Email not found',
-          data: null,
-        });
-
-        return;
+        throw { status: 404, message: "EMAIL_NOT_FOUND", data: null };
       }
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   profile: async (req, res) => {
@@ -202,8 +199,8 @@ module.exports = {
 
       const user = await prisma.users.findUnique({
         where: {
-          id: user_id
-        }
+          id: user_id,
+        },
       });
 
       delete user.password;
@@ -211,23 +208,28 @@ module.exports = {
       delete user.onesignal_id;
 
       res.status(200).json({
-        message: 'Berhasil mengambil profile user',
-        data: {
-          user,
-        }
+        status: true,
+        message: "SUCCESS_GET_PROFILE",
+        data: user,
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   changeProfile: async (req, res) => {
-    const changeProfileSchema = joi.object({
-      name: joi.string().required().messages({
-        'string.base': 'Nama hanya bisa dimasukkan text',
-        'string.empty': 'Nama tidak boleh dikosongi',
-        'any.required': 'Nama wajib diisi',
-      }),
-    }).unknown(true);
+    const changeProfileSchema = joi
+      .object({
+        name: joi.string().required().messages({
+          "string.base": "Nama hanya bisa dimasukkan text",
+          "string.empty": "Nama tidak boleh dikosongi",
+          "any.required": "Nama wajib diisi",
+        }),
+      })
+      .unknown(true);
 
     try {
       const user_id = req.user.id;
@@ -239,18 +241,18 @@ module.exports = {
 
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
       const updateUser = await prisma.users.update({
         where: {
-          id: user_id
+          id: user_id,
         },
         data: {
-          name, gender, phone
-        }
+          name,
+          gender,
+          phone,
+        },
       });
 
       delete updateUser.password;
@@ -258,28 +260,33 @@ module.exports = {
       delete updateUser.onesignal_id;
 
       res.status(200).json({
-        message: 'berhasil memperbarui profile',
+        status: true,
+        message: "SUCCESS_UPDATE_DATA",
         data: {
           user: updateUser,
-        }
+        },
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   changePassword: async (req, res) => {
     const changePasswordSchema = joi.object({
       old_password: joi.string().min(8).required().messages({
-        'string.empty': 'Password lama tidak boleh dikosongi',
-        'string.min': 'Password lama tidak boleh kurang dari 8 karakter',
-        'any.required': 'Password lama wajib diisi',
+        "string.empty": "Password lama tidak boleh dikosongi",
+        "string.min": "Password lama tidak boleh kurang dari 8 karakter",
+        "any.required": "Password lama wajib diisi",
       }),
       new_password: joi.string().min(8).required().messages({
-        'string.empty': 'Password baru tidak boleh dikosongi',
-        'string.min': 'Password baru tidak boleh kurang dari 8 karakter',
-        'any.required': 'Password baru wajib diisi',
+        "string.empty": "Password baru tidak boleh dikosongi",
+        "string.min": "Password baru tidak boleh kurang dari 8 karakter",
+        "any.required": "Password baru wajib diisi",
       }),
-      new_password_confirm: joi.ref('new_password'),
+      new_password_confirm: joi.ref("new_password"),
     });
 
     try {
@@ -292,60 +299,67 @@ module.exports = {
 
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
-      const checkUser = await prisma.users.findUnique({ where: { id: user_id } });
+      const checkUser = await prisma.users.findUnique({
+        where: { id: user_id },
+      });
 
       if (checkUser) {
         try {
           if (await bcrypt.compare(old_password, checkUser.password)) {
             if (new_password !== new_password_confirm) {
-              res.status(422).json({
-                message: 'password baru dan password konfirmasi tidak sesuai',
-                data: null
-              });
-
-              return;
+              let message = error.details[0].message;
+              throw {
+                status: 400,
+                message: "PASSWORD_CONFIRM_NOT_THE_SAME_NEW_PASSWORD",
+                data: null,
+              };
             }
 
             const newPasswordHashed = await bcrypt.hash(new_password, 10);
 
             const updateUser = await prisma.users.update({
               where: {
-                id: user_id
+                id: user_id,
               },
               data: {
-                password: newPasswordHashed
-              }
+                password: newPasswordHashed,
+              },
             });
 
             delete updateUser.password;
 
             res.status(200).json({
-              message: 'berhasil memperbarui password',
+              status: true,
+              message: "SUCCESS_UPDATE_DATA",
               data: {
                 updateUser,
-              }
+              },
             });
 
             return;
           } else {
-            res.status(401).json({
-              message: 'password lama tidak cocok',
-              data: null
-            });
-
-            return;
+            throw {
+              status: 401,
+              message: "WRONG_PASSWORD",
+              data: null,
+            };
           }
         } catch (error) {
-          res.status(500).send(error.message);
+          return res.status(error.status || 500).json({
+            status: false,
+            message: error.message || "INTERNAL_SERVER_ERROR",
+          });
         }
       }
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   requestResetPasswordToken: async (req, res) => {
@@ -356,34 +370,32 @@ module.exports = {
     try {
       const { email } = req.body;
 
-      const { error, value } = requestResetPasswordTokenSchema.validate(req.body, {
-        abortEarly: false,
-      });
+      const { error, value } = requestResetPasswordTokenSchema.validate(
+        req.body,
+        {
+          abortEarly: false,
+        }
+      );
 
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
       const checkEmail = await prisma.users.findUnique({
         where: {
-          email
-        }
+          email,
+        },
       });
 
       if (!checkEmail) {
-        res.status(404).json({
-          message: 'Email tidak terdaftar',
-          data: null
-        });
-
-        return;
+        throw { status: 404, message: "EMAIL_NOT_FOUND", data: null };
       }
 
-      const code = crypto.randomBytes(3).toString('hex');
-      const resetToken = parseInt(code.toString('hex'), 16).toString().substring(0, 6);
+      const code = crypto.randomBytes(3).toString("hex");
+      const resetToken = parseInt(code.toString("hex"), 16)
+        .toString()
+        .substring(0, 6);
       const hashToken = await bcrypt.hashSync(resetToken, 8);
       const dateNow = new Date();
       dateNow.setMinutes(dateNow.getMinutes() + 10);
@@ -391,85 +403,85 @@ module.exports = {
 
       await prisma.user_reset_passwords.upsert({
         create: {
-          email, token: hashToken, expired_at: expiredToken
+          email,
+          token: hashToken,
+          expired_at: expiredToken,
         },
         update: {
-          email, token: hashToken, expired_at: expiredToken
+          email,
+          token: hashToken,
+          expired_at: expiredToken,
         },
         where: {
-          email
-        }
+          email,
+        },
       });
 
       const data = {
-        from: 'Pawang <teampawang.dev@gmail.com>',
+        from: "Pawang <teampawang.dev@gmail.com>",
         to: email,
         subject: "Kode Lupa Kata Sandi",
         text: `Gunakan kode ini untuk mengatur ulang kata sandi akun Anda: ${resetToken}. Kode hanya berlaku 10 menit.`,
         html: `<p>Gunakan kode ini untuk mengatur ulang kata sandi akun Anda: <strong>${resetToken}</strong>. Kode hanya berlaku 10 menit.</p>`,
-      }
+      };
 
-      eventsEmitter.emit('sendEmail', data);
+      eventsEmitter.emit("sendEmail", data);
 
       res.status(200).json({
-        message: 'berhasil mengirim token untuk reset password, silahkan cek email anda',
-        data: null
+        status: true,
+        message: "SUCCESS_SEND_TOKEN",
+        data: null,
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   verifyResetPasswordToken: async (req, res) => {
     const verifyResetPasswordTokenSchema = joi.object({
       email: joi.string().email().required().messages({
-        'string.base': 'Email hanya bisa dimasukkan email',
-        'string.empty': 'Email tidak boleh dikosongi',
-        'any.required': 'Email wajib diisi',
+        "string.base": "Email hanya bisa dimasukkan email",
+        "string.empty": "Email tidak boleh dikosongi",
+        "any.required": "Email wajib diisi",
       }),
       token: joi.string().min(6).required().messages({
-        'string.empty': 'Token tidak boleh dikosongi',
-        'string.min': 'Token tidak boleh kurang dari 6 karakter',
-        'any.required': 'Token wajib diisi',
+        "string.empty": "Token tidak boleh dikosongi",
+        "string.min": "Token tidak boleh kurang dari 6 karakter",
+        "any.required": "Token wajib diisi",
       }),
     });
 
     try {
       const { token, email } = req.body;
 
-      const { error, value } = verifyResetPasswordTokenSchema.validate(req.body, {
-        abortEarly: false,
-      });
+      const { error, value } = verifyResetPasswordTokenSchema.validate(
+        req.body,
+        {
+          abortEarly: false,
+        }
+      );
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
       const checkEmail = await prisma.user_reset_passwords.findFirst({
         where: {
-          email
-        }
+          email,
+        },
       });
 
       if (!checkEmail) {
-        res.status(422).json({
-          message: 'email tidak valid',
-          data: null
-        });
-
-        return;
+        throw { status: 404, message: "EMAIL_NOT_FOUND", data: null };
       }
 
       const compareToken = await bcrypt.compare(token, checkEmail.token);
 
       if (!compareToken) {
-        res.status(422).json({
-          message: 'token tidak valid',
-          data: null
-        });
-
-        return;
+        throw { status: 404, message: "TOKEN_NOT_MISMATCH", data: null };
       }
 
       const now = new Date();
@@ -477,42 +489,41 @@ module.exports = {
 
       if (now < tokenExpired) {
         res.status(200).json({
-          message: 'token valid, silahkan buat password baru',
-          data: null
+          status: true,
+          message: "SUCCESS_VERIFY_TOKEN",
+          data: null,
         });
 
         return;
       } else {
-        res.status(410).json({
-          message: 'token tidak valid, silahkan request token kembali',
-          data: null
-        });
-
-        return;
+        throw { status: 410, message: "TOKEN_EXPIRED", data: null };
       }
-
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   resetPassword: async (req, res) => {
     const resetPasswordSchema = joi.object({
       email: joi.string().email().required().messages({
-        'string.base': 'Email hanya bisa dimasukkan email',
-        'string.empty': 'Email tidak boleh dikosongi',
-        'any.required': 'Email wajib diisi',
+        "string.base": "Email hanya bisa dimasukkan email",
+        "string.empty": "Email tidak boleh dikosongi",
+        "any.required": "Email wajib diisi",
       }),
       token: joi.string().min(6).required().messages({
-        'string.empty': 'Token tidak boleh dikosongi',
-        'string.min': 'Token tidak boleh kurang dari 6 karakter',
-        'any.required': 'Token wajib diisi',
+        "string.empty": "Token tidak boleh dikosongi",
+        "string.min": "Token tidak boleh kurang dari 6 karakter",
+        "any.required": "Token wajib diisi",
       }),
       password: joi.string().min(8).required().messages({
-        'string.empty': 'Password baru tidak boleh dikosongi',
-        'string.min': 'Password baru tidak boleh kurang dari 8 karakter',
-        'any.required': 'Password baru wajib diisi',
+        "string.empty": "Password baru tidak boleh dikosongi",
+        "string.min": "Password baru tidak boleh kurang dari 8 karakter",
+        "any.required": "Password baru wajib diisi",
       }),
-      password_confirm: joi.ref('password'),
+      password_confirm: joi.ref("password"),
     });
 
     try {
@@ -523,76 +534,71 @@ module.exports = {
       });
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
       const checkToken = await prisma.user_reset_passwords.findFirst({
         where: {
-          email
-        }
+          email,
+        },
       });
 
       if (!checkToken) {
-        res.status(422).json({
-          message: 'email tidak valid',
-          data: null
-        });
-
-        return;
+        throw { status: 404, message: "EMAIL_NOT_FOUND", data: null };
       }
 
       const compareToken = await bcrypt.compare(token, checkToken.token);
 
       if (!compareToken) {
-        res.status(422).json({
-          message: 'token tidak valid',
-          data: null
-        });
-
-        return;
+        throw { status: 404, message: "TOKEN_NOT_MISMATCH", data: null };
       }
 
       if (password != password_confirm) {
-        res.status(422).json({
-          message: 'password dan password konfirmasi tidak sesuai',
-          data: null
-        });
-
-        return;
+        throw {
+          status: 400,
+          message: "PASSWORD_CONFIRM_NOT_THE_SAME_NEW_PASSWORD",
+          data: null,
+        };
       }
 
       const passwordHash = await bcrypt.hash(password, 10);
 
       await prisma.users.update({
         where: {
-          email: checkToken.email
+          email: checkToken.email,
         },
         data: {
-          password: passwordHash
-        }
+          password: passwordHash,
+        },
       });
 
       await prisma.user_reset_passwords.delete({
         where: {
-          id: checkToken.id
-        }
+          id: checkToken.id,
+        },
       });
 
       res.status(200).json({
-        message: 'reset password berhasil, silahkan login kembali',
-        data: null
+        status: true,
+        message: "SUCCESS_RESET_PASSWORD",
+        data: null,
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   loginWithGoogle: async (req, res) => {
     try {
       const { google_id, email, name, image_profile, onesignal_id } = req.body;
 
-      const passwordHash = await bcrypt.hash(`${google_id}_${Date.now().toLocaleString()}`, 10)
+      const passwordHash = await bcrypt.hash(
+        `${google_id}_${Date.now().toLocaleString()}`,
+        10
+      );
 
       const checkUser = await prisma.users.upsert({
         where: {
@@ -604,27 +610,27 @@ module.exports = {
           name,
           password: passwordHash,
           image_profile,
-          onesignal_id,
           wallets: {
             create: {
               name: "Dompet",
               balance: 0,
-            }
-          }
+            },
+          },
+          users_onesignals: {
+            create: {
+              onesignal_id,
+            },
+          },
         },
         update: {
-          image_profile, google_id, onesignal_id
-        }
-      });
-
-      // Onesignal Update
-      await prisma.users.update({
-        where: {
-          id: checkUser.id
+          image_profile,
+          google_id,
+          users_onesignals: {
+            create: {
+              onesignal_id,
+            },
+          },
         },
-        data: {
-          onesignal_id: onesignal_id
-        }
       });
 
       // Add Player OneSignal
@@ -638,14 +644,19 @@ module.exports = {
       delete checkUser.onesignal_id;
 
       res.status(200).json({
-        message: 'success login user!',
+        status: true,
+        message: "SUCCESS_LOGIN",
         data: {
           user: checkUser,
-          access_token: accessToken
-        }
+          access_token: accessToken,
+        },
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
 };

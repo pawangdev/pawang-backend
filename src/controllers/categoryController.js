@@ -40,6 +40,7 @@ module.exports = {
       return res.status(error.status || 500).json({
         status: false,
         message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
       });
     }
   },
@@ -59,7 +60,7 @@ module.exports = {
       });
 
       if (!category) {
-        throw { status: 404, message: "DATA_NOT_FOUND" };
+        throw { status: 404, message: "DATA_NOT_FOUND", data: null };
       }
 
       res.status(200).json({
@@ -71,6 +72,7 @@ module.exports = {
       return res.status(error.status || 500).json({
         status: false,
         message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
       });
     }
   },
@@ -100,7 +102,7 @@ module.exports = {
         where: { id: Number(id) },
       });
       if (!category) {
-        throw { status: 404, message: "DATA_NOT_FOUND" };
+        throw { status: 404, message: "DATA_NOT_FOUND", data: null };
       }
 
       const newSubCategory = await prisma.sub_categories.create({
@@ -121,6 +123,7 @@ module.exports = {
       return res.status(error.status || 500).json({
         status: false,
         message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
       });
     }
   },
@@ -152,7 +155,7 @@ module.exports = {
       });
 
       if (!category) {
-        throw { status: 404, message: "DATA_NOT_FOUND" };
+        throw { status: 404, message: "DATA_NOT_FOUND", data: null };
       }
 
       const subCategory = await prisma.sub_categories.findFirst({
@@ -166,7 +169,7 @@ module.exports = {
       });
 
       if (!subCategory) {
-        throw { status: 404, message: "DATA_NOT_FOUND" };
+        throw { status: 404, message: "DATA_NOT_FOUND", data: null };
       }
 
       const updateSubCategory = await prisma.sub_categories.update({
@@ -188,6 +191,7 @@ module.exports = {
       return res.status(error.status || 500).json({
         status: false,
         message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
       });
     }
   },
@@ -202,7 +206,7 @@ module.exports = {
       });
 
       if (!category) {
-        throw { status: 404, message: "DATA_NOT_FOUND" };
+        throw { status: 404, message: "DATA_NOT_FOUND", data: null };
       }
 
       const subCategory = await prisma.sub_categories.findFirst({
@@ -216,7 +220,7 @@ module.exports = {
       });
 
       if (!subCategory) {
-        throw { status: 404, message: "DATA_NOT_FOUND" };
+        throw { status: 404, message: "DATA_NOT_FOUND", data: null };
       }
 
       await prisma.sub_categories.delete({
@@ -234,6 +238,7 @@ module.exports = {
       return res.status(error.status || 500).json({
         status: false,
         message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
       });
     }
   },

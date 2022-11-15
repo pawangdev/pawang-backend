@@ -1,27 +1,31 @@
-const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
+const jwt = require("jsonwebtoken");
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 module.exports = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(" ")[1];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
-    if (token == null) return res.status(401).send({ message: "Unauthorized" });
+  if (token == null) throw { status: 401, message: "Unauthorized", data: null };
 
-    jwt.verify(token, process.env.TOKEN_SECRET_KEY, async (err, user) => {
-        try {
-            if (err) return res.status(401).send({ message: "Unauthorized" });
-            const auth = await prisma.users.findUnique({
-                where: {
-                    id: user.id
-                }
-            });
+  jwt.verify(token, process.env.TOKEN_SECRET_KEY, async (err, user) => {
+    try {
+      if (err) throw { status: 401, message: "Unauthorized", data: null };
+      const auth = await prisma.users.findUnique({
+        where: {
+          id: user.id,
+        },
+      });
 
-            if (!auth) return res.status(401).send({ message: "Unauthorized" });
-            req.user = auth;
-            next();
-        } catch (error) {
-            throw new Error(error.message);
-        }
-    });
-}
+      if (!auth) throw { status: 401, message: "Unauthorized", data: null };
+      req.user = auth;
+      next();
+    } catch (error) {
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
+    }
+  });
+};

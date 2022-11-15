@@ -45,11 +45,16 @@ module.exports = {
       });
 
       res.status(200).json({
-        message: "success retreived data!",
+        status: true,
+        message: "SUCCESS_GET_DATA",
         data: wallets,
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   show: async (req, res) => {
@@ -81,12 +86,7 @@ module.exports = {
       });
 
       if (!checkWallet) {
-        res.status(404).json({
-          message: "failed retreived wallet!",
-          data: null,
-        });
-
-        return;
+        throw { status: 404, message: "DATA_NOT_FOUND", data: null };
       }
 
       let totalIncome = 0;
@@ -104,11 +104,16 @@ module.exports = {
       checkWallet["total_outcome"] = totalOutcome;
 
       res.status(200).json({
-        message: "success retreived data!",
+        status: true,
+        message: "SUCCESS_GET_DATA",
         data: checkWallet,
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   create: async (req, res) => {
@@ -135,9 +140,7 @@ module.exports = {
       });
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
       const newWallet = await prisma.wallets.create({
@@ -162,11 +165,16 @@ module.exports = {
       }
 
       res.status(201).json({
-        message: "success create wallet!",
+        status: true,
+        message: "SUCCESS_CREATE_DATA",
         data: newWallet,
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   update: async (req, res) => {
@@ -194,33 +202,20 @@ module.exports = {
       });
       if (error) {
         let message = error.details[0].message;
-        res.status(422).json({ message: "Format Tidak Valid", data: message });
-
-        return;
+        throw { status: 400, message: "INVALID_INPUT", data: message };
       }
 
-      const checkWallet = await prisma.wallets.findUnique({
+      const checkWallet = await prisma.wallets.findFirst({
         where: {
-          id: Number(id),
+          AND: {
+            id: Number(id),
+            user_id: req.user.id,
+          },
         },
       });
 
       if (!checkWallet) {
-        res.status(404).json({
-          message: "failed retreived data!",
-          data: null,
-        });
-
-        return;
-      } else {
-        if (checkWallet.user_id != req.user.id) {
-          res.status(404).json({
-            message: "failed retreived data!",
-            data: null,
-          });
-
-          return;
-        }
+        throw { status: 404, message: "DATA_NOT_FOUND", data: null };
       }
 
       if (
@@ -263,20 +258,28 @@ module.exports = {
       });
 
       res.status(200).json({
-        message: "success update wallet!",
+        status: true,
+        message: "SUCCESS_UPDATE_DATA",
         data: updateWallet,
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
   destroy: async (req, res) => {
     try {
       const { id } = req.params;
 
-      const checkWallet = await prisma.wallets.findUnique({
+      const checkWallet = await prisma.wallets.findFirst({
         where: {
-          id: Number(id),
+          AND: {
+            id: Number(id),
+            user_id: req.user.id,
+          },
         },
         include: {
           transactions: {},
@@ -284,21 +287,7 @@ module.exports = {
       });
 
       if (!checkWallet) {
-        res.status(404).json({
-          message: "failed retreived wallet!",
-          data: null,
-        });
-
-        return;
-      } else {
-        if (checkWallet.user_id != req.user.id) {
-          res.status(404).json({
-            message: "failed retreived wallet!",
-            data: null,
-          });
-
-          return;
-        }
+        throw { status: 404, message: "DATA_NOT_FOUND", data: null };
       }
 
       checkWallet.transactions.forEach((transaction) => {
@@ -314,11 +303,16 @@ module.exports = {
       });
 
       res.status(200).json({
-        message: "success delete wallet!",
+        status: true,
+        message: "SUCCESS_DELETE_DATA",
         data: null,
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
     }
   },
 };
