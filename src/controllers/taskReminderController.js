@@ -222,7 +222,7 @@ module.exports = {
     }
   },
   scheduler: async () => {
-    schedule.scheduleJob("*/2 * * * * *", async () => {
+    schedule.scheduleJob("*/3 * * * * *", async () => {
       const reminders = await prisma.task_reminders.findMany({
         include: {
           user: {
@@ -239,6 +239,8 @@ module.exports = {
       reminders.forEach(async (item) => {
         if (moment().format() === moment(item.date).format()) {
           item.user.users_onesignals.forEach(async (user) => {
+            console.log(item);
+
             await sendNotification({
               title: "Pengingat",
               subtitle: `Jangan Lupa ${item.name}, ${moment().format("LL")}`,

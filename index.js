@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({}));
 
-// Compress all HTTP responsess
+// Compress all HTTP responses
 app.use(compression());
 
 // Routing
@@ -31,7 +31,7 @@ app.use("/api", routes);
 
 // Handling Error Page Not Found
 app.use((req, res) => {
-  res.status(404).json({ status: false, message: "404_NOT_FOUND" });
+  res.status(404).json({ status: false, message: "404_NOT_FOUND", data: null });
 });
 
 // Notification Scheduler
