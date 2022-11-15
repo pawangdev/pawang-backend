@@ -222,7 +222,7 @@ module.exports = {
     }
   },
   scheduler: async () => {
-    schedule.scheduleJob("*/5 * * * * *", async () => {
+    schedule.scheduleJob("*/2 * * * * *", async () => {
       const reminders = await prisma.task_reminders.findMany({
         include: {
           user: {
@@ -244,6 +244,8 @@ module.exports = {
               subtitle: `Jangan Lupa ${item.name}, ${moment().format("LL")}`,
               playerId: user.onesignal_id,
             });
+
+            console.log("send notification success to", user.onesignal_id);
           });
 
           const newDate = new Date(item.date);
