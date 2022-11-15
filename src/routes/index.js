@@ -40,6 +40,7 @@ router.post(
   userController.verifyResetPasswordToken
 );
 router.post("/auth/reset-password", userController.resetPassword);
+router.post("/auth/logout", userController.logout);
 
 // Wallets
 router.get("/wallets", authMiddleware, walletController.index);

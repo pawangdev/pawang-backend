@@ -77,7 +77,7 @@ module.exports = {
       });
 
       // Add Player OneSignal
-      await addPlayer({ onesignal_id });
+      await addPlayer({ email, onesignal_id });
 
       delete newUser.password;
       delete newUser.google_id;
@@ -155,7 +155,7 @@ module.exports = {
             });
 
             // Add Player OneSignal
-            await addPlayer({ onesignal_id });
+            await addPlayer({ email, onesignal_id });
 
             delete user.password;
             delete user.google_id;
@@ -634,7 +634,7 @@ module.exports = {
       });
 
       // Add Player OneSignal
-      await addPlayer({ onesignal_id });
+      await addPlayer({ email, onesignal_id });
 
       const payload = { id: checkUser.id };
       const accessToken = jwt.sign(payload, process.env.TOKEN_SECRET_KEY);
@@ -650,6 +650,37 @@ module.exports = {
           user: checkUser,
           access_token: accessToken,
         },
+      });
+    } catch (error) {
+      return res.status(error.status || 500).json({
+        status: false,
+        message: error.message || "INTERNAL_SERVER_ERROR",
+        data: null,
+      });
+    }
+  },
+  logout: async (req, res) => {
+    try {
+      const { onesignal_id } = req.body;
+
+      const checkOneSignal = await prisma.users_onesignals.findMany({
+        where: {
+          onesignal_id,
+        },
+      });
+
+      if (checkOneSignal.length > 0) {
+        await prisma.users_onesignals.deleteMany({
+          where: {
+            onesignal_id,
+          },
+        });
+      }
+
+      res.status(200).json({
+        status: true,
+        message: "SUCCESS_LOGOUT",
+        data: null,
       });
     } catch (error) {
       return res.status(error.status || 500).json({
