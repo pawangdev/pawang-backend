@@ -237,10 +237,8 @@ module.exports = {
       });
 
       reminders.forEach(async (item) => {
-        if (moment().format() === moment(item.date).format()) {
+        if (moment().format("LLL") === moment(item.date).format("LLL")) {
           item.user.users_onesignals.forEach(async (user) => {
-            console.log(item);
-
             await sendNotification({
               title: "Pengingat",
               subtitle: `Jangan Lupa ${item.name}, ${moment().format("LL")}`,
