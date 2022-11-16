@@ -262,9 +262,7 @@ module.exports = {
       res.status(200).json({
         status: true,
         message: "SUCCESS_UPDATE_DATA",
-        data: {
-          user: updateUser,
-        },
+        data: updateUser,
       });
     } catch (error) {
       return res.status(error.status || 500).json({
