@@ -582,7 +582,7 @@ module.exports = {
       const checkWallet = await prisma.wallets.findFirst({
         where: {
           AND: {
-            id: Number(wallet_id),
+            id: checkTransaction.wallet_id,
             user_id: req.user.id,
           },
         },
