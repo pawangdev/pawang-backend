@@ -49,7 +49,7 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
         
-    - name: executing remote ssh commands using password
+    - name: Deploy On Azure
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -60,3 +60,27 @@ jobs:
           docker image rm -f ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
           docker run -d -p 5000:5000 --restart always -v /home/pawang/pawang-backend/public:/usr/src/app/public --name pawang-backend ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
+
+    - name: Deploy On Alibaba
+      uses: appleboy/ssh-action@master
+      with:
+        host: "47.250.130.38"
+        username: ${{ secrets.SSH_LB_USERNAME }}
+        password: ${{ secrets.SSH_LB_PASSWORD }}
+        script: |
+          docker rm -f pawang-backend
+          docker image rm -f ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
+          docker run -d -p 5000:5000 --restart always -v /root/pawang-backend/public:/usr/src/app/public --name pawang-backend ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
+
+    - name: Deploy On Recloud
+      uses: appleboy/ssh-action@master
+      with:
+        host: "139.59.99.122"
+        username: ${{ secrets.SSH_LB_USERNAME }}
+        password: ${{ secrets.SSH_LB_PASSWORD }}
+        script: |
+          docker rm -f pawang-backend
+          docker image rm -f ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
+          docker run -d -p 5000:5000 --restart always -v /root/pawang-backend/public:/usr/src/app/public --name pawang-backend ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
