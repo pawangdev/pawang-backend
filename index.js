@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const compression = require("compression");
+const morgan = require("morgan");
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({}));
+app.use(morgan("tiny"));
 
 // Compress all HTTP responses
 app.use(compression());
