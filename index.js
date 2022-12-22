@@ -22,7 +22,7 @@ app.use(compression());
 
 // Routing
 app.get("/", (req, res) => {
-  res.send("Team Pawang API 2022");
+    res.send("Team Pawang API 2023");
 });
 
 // Static File
@@ -33,12 +33,12 @@ app.use("/api", routes);
 
 // Handling Error Page Not Found
 app.use((req, res) => {
-  res.status(404).json({ status: false, message: "404_NOT_FOUND", data: null });
+    res.status(404).json({ status: false, message: "404_NOT_FOUND", data: null });
 });
 
 // Notification Scheduler
 scheduler();
 
 app.listen(process.env.APP_PORT || 5000, () => {
-  console.log("🚀 Server Started on port", process.env.APP_PORT || 5000);
+    console.log("🚀 Server Started on port", process.env.APP_PORT || 5000);
 });
