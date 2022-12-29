@@ -314,6 +314,8 @@ module.exports = {
             }
           }
 
+          console.log(req.file);
+
           const newTransaction = await prisma.transactions.create({
             data: {
               amount: parseFloat(amount),
@@ -483,6 +485,8 @@ module.exports = {
               };
             }
           }
+
+          console.log(req.file);
 
           if (req.file) {
             if (checkTransaction.image_url) {
