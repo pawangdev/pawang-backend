@@ -50,9 +50,9 @@ jobs:
             - name: Deploy On Azure
               uses: appleboy/ssh-action@master
               with:
-                  host: ${{ secrets.SSH_HOST }}
-                  username: ${{ secrets.SSH_USERNAME }}
-                  password: ${{ secrets.SSH_PASSWORD }}
+                  host: "206.189.90.119"
+                  username: ${{ secrets.SSH_LB_USERNAME }}
+                  password: ${{ secrets.SSH_LB_PASSWORD }}
                   script: |
                       docker rm -f pawang-backend
                       docker image rm -f ${{ secrets.DOCKERHUB_USERNAME }}/pawang-backend:latest
